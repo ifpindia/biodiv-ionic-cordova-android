@@ -1,0 +1,19 @@
+<ion-view view-title="Observations">
+  <ion-content  >
+         <ion-list class="item-icon-right">
+         <ion-item class="item-thumbnail-left" ng-repeat='item in details track by $index' href="#/app/browsedetails/{{item.id}}">
+         <img src="{{item.iconUrl}}" alt="{{item.sciName}} photo">
+         <h2>{{item.scientificName}}</h2>
+         <p>{{item.CommonName}}</p>
+         <i class="icon ion-chevron-right "></i>
+         </ion-item>
+         </ion-list>
+         <ion-infinite-scroll
+         immediate-check="false"
+         ng-if="!noMoreItemsAvailable"
+		    on-infinite="loadMore()"
+		    distance="10%"
+		    >
+		  </ion-infinite-scroll>
+        </ion-content> 
+</ion-view>

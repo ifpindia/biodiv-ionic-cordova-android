@@ -1,0 +1,12 @@
+<ion-view title="{{head.scientificName}}">
+  <ion-content  >
+         <ion-list >
+         <ion-item ng-repeat='item in singleObsDetails track by $index' >
+         <!--img src="{{item.iconUrl}}" alt="{{item.sciName}} photo"-->
+         <h2>{{item.scientificName}}</h2>
+         <p>{{item.CommonName}}</p>
+         </ion-item>
+         </ion-list>
+         
+        </ion-content> 
+</ion-view>

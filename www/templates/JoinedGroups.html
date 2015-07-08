@@ -1,0 +1,11 @@
+<ion-view view-title="Joined Groups">
+  <ion-content class="has-subheader" >
+         <ion-list class="item-icon-right">
+         <ion-item class="item item-button-right" ng-repeat='item in usrGrpDetails'>
+         <h2>{{item.name}}</h2>
+         <button class="button button-large button-balanced button{{item.id}}">Join</button>
+         <i class="joinedicon{{item.id}} "></i>
+         </ion-item>
+         </ion-list>
+        </ion-content> 
+</ion-view>

@@ -1,0 +1,11 @@
+{
+  "name": "wikwioCS",
+  "app_id": "",
+  "proxies": [
+    {
+      "path": "/api",
+      "proxyUrl": "http://portal.wikwio.org/api"
+    }
+  ]
+}
+
