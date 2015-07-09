@@ -68,7 +68,8 @@ angular.module('starter', ['ionic', 'starter.controllers','starter.services'])
     url: "/newObservation",
     views: {
       'menuContent': {
-        templateUrl: "templates/newObservation.html"
+        templateUrl: "templates/newObservation.html",
+        controller: 'NewObservationCtrl'
       }
     }
   })
@@ -113,7 +114,7 @@ angular.module('starter', ['ionic', 'starter.controllers','starter.services'])
     }
   });
   // if none of the above states are matched, use this as the fallback
-  $urlRouterProvider.otherwise('/app/browsedetails');
+  $urlRouterProvider.otherwise('/app/home');
 });
 
 

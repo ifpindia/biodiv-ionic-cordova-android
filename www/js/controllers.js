@@ -90,51 +90,72 @@ function browsingArray($scope,obsDetails,obsId){
       }
       id=obsDetails[i].id;
       
+      imgDetails[id] ={};
       for(var j=0;j<obsDetails[i].resource.length;j++){
-        console.log(obsDetails[i].resource[j]);
-        imgDetails[id][0]=obsDetails[i].resource[j];
+        //console.log(obsDetails[i].resource[j]);
+        
+        imgDetails[id][j]=obsDetails[i].resource[j];
 
       }
-      return false;
-      console.log(imgDetails);
-      updated = new Date(obsDetails[i].lastRevised.replace( /(\d{2})-(\d{2})-(\d{4})/, "$2/$1/$3") );
-      submited = new Date(obsDetails[i].createdOn.replace( /(\d{2})-(\d{2})-(\d{4})/, "$2/$1/$3") );
-      observed = new Date(obsDetails[i].fromDate.replace( /(\d{2})-(\d{2})-(\d{4})/, "$2/$1/$3") );
+      
+      //console.log(imgDetails);
+      var updated1 = new Date(obsDetails[i].lastRevised.replace( /(\d{2})-(\d{2})-(\d{4})/, "$2/$1/$3") );
+      var updated2 = updated1.toString();
+       updated = updated2.slice(4,15);
+       //console.log(updated);
+      var submited1 = new Date(obsDetails[i].createdOn.replace( /(\d{2})-(\d{2})-(\d{4})/, "$2/$1/$3") );
+      var submited2 = updated1.toString();
+       submited = updated2.slice(4,15);
+      var observed1 = new Date(obsDetails[i].fromDate.replace( /(\d{2})-(\d{2})-(\d{4})/, "$2/$1/$3") );
+      var observed2 = updated1.toString();
+       observed = updated2.slice(4,15);
       notes =  obsDetails[i].notes;
       author = obsDetails[i].author.name;
       place = obsDetails[i].reverseGeocodedName;
-          $scope.insertDetails.push({"id":id,"scientificName":sciName,"CommonName":commonname,"observed":observed,"updated":updated,"submitted":submited,"author":author,"place":place, "imgDetails":imgDetails});
+          $scope.insertDetails.push({"id":id,"scientificName":sciName,"CommonName":commonname,"observed":observed,"updated":updated,"submitted":submited,"author":author,"place":place, "imgDetails":imgDetails, "notes":notes});
 
     }
-//console.log($scope.insertDetails);
+
 
 
     for(var y=0;y<$scope.insertDetails.length;y++){
-      if($scope.insertDetails[y].id=obsId){
-        $scope.singleObsDetails=[];
-        $scope.singleObsDetails.push({"id":$scope.insertDetails[y].id,"scientificName":$scope.insertDetails[y].scientificName,"CommonName":$scope.insertDetails[y].CommonName,"observed":$scope.insertDetails[y].observed,"updated":$scope.insertDetails[y].updated,"submitted":$scope.insertDetails[y].submitted,"author":$scope.insertDetails[y].author,"place":$scope.insertDetails[y].place, "imgDetails":$scope.insertDetails[y].imgDetails[$scope.insertDetails[y].id]});
+
+      if($scope.insertDetails[y].id==obsId){
+        $scope.singleObsDetails = [];
+        $scope.singleImgDetails = [];
+        
+        $scope.singleObsDetails.push({"id":$scope.insertDetails[y].id,"scientificName":$scope.insertDetails[y].scientificName,"CommonName":$scope.insertDetails[y].CommonName,"observed":$scope.insertDetails[y].observed,"updated":$scope.insertDetails[y].updated,"submitted":$scope.insertDetails[y].submitted,"author":$scope.insertDetails[y].author,"place":$scope.insertDetails[y].place, "imgDetails":$scope.insertDetails[y].imgDetails[$scope.insertDetails[y].id], "notes":$scope.insertDetails[y].notes});
         console.log($scope.singleObsDetails);
-        return false;
+        if($scope.singleObsDetails[0]["notes"].length>0){
+          $scope.visible=false;
+        }else{
+          $scope.visible=true;
+        }
+        $scope.singleImgDetails.push({"image":$scope.insertDetails[y].imgDetails[$scope.insertDetails[y].id]});
+        break;
       }
     }
-    
-      //  console.log($scope.insertDetails);
-
-
+   
 }
 
 
 
-appne.controller('PlaylistCtrl', function($scope, $stateParams) {
+appne.controller('NewObservationCtrl', function($scope) {
+
+  $(function () {
+    $('#check').change(function () {
+      console.log(this.checked);
+        $(".check1").toggle(this.checked);
+    });
 });
 
-appne.controller('homeController', function($scope,$state){
+  $scope.userGroup = function(){
+    alert("user");
+  }
 
-  $scope.browse=function(){
-    console.log("clicked");
-        $state.go('app.browse');
-  };
 });
+
+
 
 appne.controller('ListController',[ '$scope', '$http', function($scope,$http,BrowseService){
   console.log("List");
@@ -262,6 +283,8 @@ function checkGroup($scope,joinedgroup){
  
   
 }
+
+
 
 
 

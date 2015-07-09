@@ -1,5 +1,65 @@
 <ion-view view-title="New Observation">
   <ion-content>
-    <h1>New Observation</h1>
+  <form ng-submit="submitNewObs()">
+  <div style="padding:10px;">
+  	<button class="button button-positive buttontop" ng-click="browse()">browse photos</button>
+  	<button class="button button-positive buttontop" ng-click="browse()">browse photos</button>
+  	<button class="button button-positive buttontop" ng-click="browse()">browse photos</button>
+  	<button class="button button-positive buttontop" ng-click="browse()">browse photos</button>
+  	</div>
+
+<br>
+<br>
+
+  	 <ion-list class="item-icon-right" >
+  	 <div class="list" style="padding:10px;">
+         <ion-item class="listItem" >
+        <span >Select Category </span>
+         <i class="icon ion-chevron-right "></i>
+         </ion-item>
+         <ion-item class="listItem item-input">
+        <span class="input-label">Date Sighted </span>
+        <input type="date">
+         <i class="icon ion-chevron-right "></i>
+         </ion-item>
+         <ion-item class="listItem">
+        <span >Location </span>
+        <button class="button button-small alignright">GPS</button>
+         </ion-item>
+         </div>
+         </ion-list>
+
+         <ion-checkbox style="margin:0px 10px 0px 10px;" id="check" class="listItem" >Help Identify</ion-checkbox>
+
+         <br>
+
+
+          <ion-list>
+          <div class="list" style="padding:10px;">
+          <ion-item class="listItem check1">
+          <input type="text" ng-model="newobs.sciName" placeholder="Scientific Name">
+          </ion-item>
+          <ion-item class="listItem check1">
+          <input type="text" ng-model="newobs.commonName" placeholder="Common Name">
+          </ion-item>
+          <ion-item class="listItem">
+          <input type="text" ng-model="newobs.notes" placeholder="Notes">
+          </ion-item>
+          </div>
+          </ion-list>
+
+           <ion-list class="item-icon-right" >
+  	 <div class="list" style="padding:10px;">
+         <ion-item class="listItem" ng-click="userGroup();">
+        <span >Select UserGroups </span>
+         <i class="icon ion-chevron-right "></i>
+         </ion-item>
+         </div>
+         </ion-list>
+
+         <button class="button button-full button-positive" type="submit" style="border-radius: 7px;">Submit</button>
+
+   </form>
+
   </ion-content>
 </ion-view>

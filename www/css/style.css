@@ -17,4 +17,15 @@
 	text-decoration: none;
 	color:green;
 }
+.wide-as-needed {
+  overflow: scroll;
+  white-space: nowrap;
+}
+.scroll { 
+  min-width: 100%;
+}
+.listItem{
+	border-radius: 7px;
+	
+}
 
