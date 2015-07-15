@@ -1,14 +1,12 @@
 var appnService = angular.module('starter.services', [])
 
 appnService.factory('LoginService', function($http, ApiEndpoint){
-    console.log('ApiEndpoint', ApiEndpoint)
-    var items = [];
-    var GetUserDetails = function(data){
 
-            return $http({
+    var GetUserDetails = function(data){
+        return $http({
                 method: "POST",
-                url:ApiEndpoint.url + '/login',
-                params:data,
+                url : ApiEndpoint.url + '/login',
+                params : data,
             }).success(function(result) {
                 console.log("Auth.signin.success!")
                 console.log(result);
@@ -18,9 +16,10 @@ appnService.factory('LoginService', function($http, ApiEndpoint){
                 console.log(status);
                 console.log(headers);
                 console.log(config);
-            });
+        });
 
-        }
+    }
+
     return {
         'GetUserDetails':GetUserDetails
     };

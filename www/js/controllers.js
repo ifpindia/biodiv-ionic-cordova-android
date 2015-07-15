@@ -32,8 +32,8 @@ appne.controller('AppCtrl', function($scope, $ionicModal, $timeout,LoginService)
     console.log('Doing login', $scope.loginData);
     LoginService.GetUserDetails($scope.loginData).then(function(vals){
 
-      $scope.userDetails = vals;
-      console.log('Doing login', $scope.userDetails);
+      //$scope.userDetails = vals;
+      console.log('Doing login', vals);
       });
 
     // Simulate a login delay. Remove this and replace with your login
@@ -140,20 +140,80 @@ function browsingArray($scope,obsDetails,obsId){
 
 
 
-appne.controller('NewObservationCtrl', function($scope) {
+appne.controller('NewObservationCtrl', function($scope,$state,$http,LocationService) {
+    $(function () {
+      $('#check').change(function () {
+        console.log(this.checked);
+          $(".check1").toggle(this.checked);
+      });
+  });
 
-  $(function () {
-    $('#check').change(function () {
-      console.log(this.checked);
-        $(".check1").toggle(this.checked);
+    $scope.userGroup = function(){
+      alert("user");
+    }
+
+    ionic.Platform.ready(function() {
+
+   LocationService.GetLocation().then(function(data){
+    console.log(data.latitude,data.longitude);
+      var code="https://maps.googleapis.com/maps/api/geocode/json?latlng="+data.latitude+","+data.longitude;
+      
+      $http.get(code).success(function(dataval){
+            //console.log(dataval.results[0]);
+            $("#Locationval").text(dataval.results[0]["formatted_address"])
+          });
     });
+ });
+
+
+
+
+    $scope.gpsButton = function(){
+        
+          $state.go("app.gps");
+    }
+
+
 });
 
-  $scope.userGroup = function(){
-    alert("user");
-  }
+
+
+appne.controller('GPSController', function($scope,$location) {
+
+//alert($location.path());
+ var myLatlng = new google.maps.LatLng(37.3000, -120.4833);
+ 
+        var mapOptions = {
+            center: myLatlng,
+            zoom: 16,
+            mapTypeId: google.maps.MapTypeId.ROADMAP
+        };
+ 
+        var map = new google.maps.Map(document.getElementById("map"), mapOptions);
+
+        navigator.geolocation.getCurrentPosition(function(pos) {
+          $scope.mapval = {
+            lat: pos.coords.latitude,
+            lng: pos.coords.longitude
+          }
+          console.log($scope.mapval);
+          
+
+            map.setCenter(new google.maps.LatLng(pos.coords.latitude, pos.coords.longitude));
+            var myLocation = new google.maps.Marker({
+                position: new google.maps.LatLng(pos.coords.latitude, pos.coords.longitude),
+                map: map,
+                title: "My Location"
+            });
+        });
+ 
+        $scope.map = map;
+
+
+
 
 });
+
 
 
 
@@ -275,7 +335,7 @@ function checkGroup($scope,joinedgroup){
   for(i=0;i<joinedgroup.length;i++){
 
     joinGrpid = joinedgroup[i].id;
-
+    console.log(joinGrpid);
     $(".button"+joinGrpid).hide();
     $(".joinedicon"+joinGrpid).addClass(" icon ion-checkmark-round");
 

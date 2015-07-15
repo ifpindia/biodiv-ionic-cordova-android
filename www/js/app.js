@@ -4,9 +4,7 @@
 // 'starter' is the name of this angular module example (also set in a <body> attribute in index.html)
 // the 2nd parameter is an array of 'requires'
 // 'starter.controllers' is found in controllers.js
-angular.module('starter', ['ionic', 'starter.controllers','starter.services'])
-
-.constant('ApiEndpoint', {
+angular.module('starter', ['ionic', 'starter.controllers','starter.services']).constant('ApiEndpoint', {
     url: 'http://localhost:8100/api'
 })
 
@@ -34,7 +32,7 @@ angular.module('starter', ['ionic', 'starter.controllers','starter.services'])
     url: "/app",
     abstract: true,
     templateUrl: "templates/menu.html",
-    controller: 'AppCtrl'
+    
     
   })
 
@@ -64,6 +62,16 @@ angular.module('starter', ['ionic', 'starter.controllers','starter.services'])
     }
     })*/
 
+.state('app.login', {
+    url: "/login",
+    views: {
+      'menuContent':{
+        templateUrl: "templates/login.html",
+        controller: 'AppCtrl'
+     }
+    }
+  })
+
   .state('app.newObservation', {
     url: "/newObservation",
     views: {
@@ -73,6 +81,18 @@ angular.module('starter', ['ionic', 'starter.controllers','starter.services'])
       }
     }
   })
+
+  .state('app.gps', {
+    url: "/gps",
+    views: {
+      'menuContent': {
+        templateUrl: "templates/GPS.html",
+        controller: 'GPSController'
+      }
+    }
+  })
+
+
 
   .state('app.joinedGroups', {
       url: "/joinedGroups",
