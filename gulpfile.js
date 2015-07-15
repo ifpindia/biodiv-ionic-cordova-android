@@ -7,14 +7,33 @@ var minifyCss = require('gulp-minify-css');
 var rename = require('gulp-rename');
 var sh = require('shelljs');
 var replace = require('replace');
+var replaceFiles = ['./www/js/app.js'];
 
 var paths = {
   sass: ['./scss/**/*.scss']
 };
 
-var replaceFiles = ['./www/js/app.js'];
-
 gulp.task('default', ['sass']);
+
+gulp.task('add-proxy', function() {
+    return replace({
+        regex: "http://portal.wikwio.org/api",
+        replacement: "http://localhost:8100/api",
+        paths: replaceFiles,
+        recursive: false,
+        silent: false,
+    });
+})
+
+gulp.task('remove-proxy', function() {
+    return replace({
+        regex: "http://localhost:8100/api",
+        replacement: "http://portal.wikwio.org/api",
+        paths: replaceFiles,
+        recursive: false,
+        silent: false,
+        });
+    })
 
 gulp.task('add-proxy', function() {
   return replace({

@@ -7,7 +7,7 @@
 angular.module('starter', ['ionic', 'starter.controllers','starter.services'])
 
 .constant('ApiEndpoint', {
-  url: 'http://portal.wikwio.org/api'
+    url: 'http://localhost:8100/api'
 })
 
 
