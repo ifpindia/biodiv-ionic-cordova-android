@@ -34,7 +34,7 @@ angular.module('starter', ['ionic', 'starter.controllers','starter.services'])
     url: "/app",
     abstract: true,
     templateUrl: "templates/menu.html",
-    controller: 'AppCtrl'
+    
     
   })
 
@@ -64,6 +64,16 @@ angular.module('starter', ['ionic', 'starter.controllers','starter.services'])
     }
     })*/
 
+.state('app.login', {
+    url: "/login",
+    views: {
+      'menuContent':{
+        templateUrl: "templates/login.html",
+        controller: 'AppCtrl'
+     }
+    }
+  })
+
   .state('app.newObservation', {
     url: "/newObservation",
     views: {
@@ -73,6 +83,18 @@ angular.module('starter', ['ionic', 'starter.controllers','starter.services'])
       }
     }
   })
+
+  .state('app.gps', {
+    url: "/gps",
+    views: {
+      'menuContent': {
+        templateUrl: "templates/GPS.html",
+        controller: 'GPSController'
+      }
+    }
+  })
+
+
 
   .state('app.joinedGroups', {
       url: "/joinedGroups",
