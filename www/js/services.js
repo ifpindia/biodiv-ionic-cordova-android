@@ -34,7 +34,7 @@ appnService.factory('BrowseService', function($http,ApiEndpoint){
 		GetBrowseInfo: function(){
 				return $http({
 					method : "GET",
-					url : ApiEndpoint.url + '/speciesGroup',
+					url : ApiEndpoint.url + '/speciesGroup/list',
 					headers : {"X-Auth-Token":token},
 
 				}).success(function(data) {
@@ -55,7 +55,7 @@ appnService.factory('BrowseService', function($http,ApiEndpoint){
 		GetBrowseList: function(data){
 			return $http({
 					method : "GET",
-					url : ApiEndpoint.url + '/observation',
+					url : ApiEndpoint.url + '/observation/list',
 					headers : {"X-Auth-Token":token},
 					params : data,
 				}).success(function(data) {
@@ -120,8 +120,10 @@ appnService.factory('UserGroupService', function($http,ApiEndpoint){
 				return $http({
 					method : "GET",
 					url : ApiEndpoint.url + '/group',
-					headers : {"X-Auth-Token":token},
-					data : {"max":50}
+					headers : {
+						"X-Auth-Token":token
+					},
+					param : {"max":50,"format":"json"}
 				}).success(function(data) {
 					console.log("Auth.signin.success!")
 				

@@ -41,7 +41,7 @@ appne.controller('AppCtrl', function($scope, $state,$ionicModal, $timeout,LoginS
     //console.log('Doing login', $scope.loginData);
     LoginService.GetUserDetails($scope.loginData).then(function(vals){
 
-      console.log('Doing login', vals["data"]['model']['id']);
+      console.log('Doing login', vals);
 
       var uservar = {"userKey":vals["data"]['model']['token'],"userID":vals["data"]['model']['id']};
        localStorage.setItem('USER_KEY',JSON.stringify(uservar));
@@ -91,8 +91,11 @@ function browsingArray($scope,obsDetails,obsId){
   //console.log(obsDetails);
   for(i=0;i<obsDetails.length;i++){
     if(obsDetails[i].maxVotedReco.hasOwnProperty('commonNamesRecoList')){
-            commonname = obsDetails[i].maxVotedReco.commonNamesRecoList[0];
+            commonname = obsDetails[i].maxVotedReco.commonNamesRecoList[0].name;
+        }else {
+          commonname="";
         }
+
         if(obsDetails[i].maxVotedReco.hasOwnProperty('sciNameReco')){
                 sciName = obsDetails[i].maxVotedReco.sciNameReco.name;
 
@@ -320,7 +323,7 @@ appne.controller('JoinGroupCtrl',[ '$scope', '$http','$compile','UserGroupServic
   });*/
 UserGroupService.GetUserGroups().then(function(groups){
 
-  console.log(groups);
+  console.log(groups['data']['model']);
   userGroupData($scope,groups['data']['model'].userGroupInstanceList);
 });
    /*$http.get('js/joinedGroup.json').success(function(data){
