@@ -1,6 +1,6 @@
 var appne = angular.module('starter.controllers', [])
 
-appne.controller('AppCtrl', function($scope, $ionicModal, $timeout,LoginService) {
+appne.controller('AppCtrl', function($scope, $state,$ionicModal, $timeout,LoginService) {
   
   // With the new view caching in Ionic, Controllers are only called
   // when they are recreated or on app start, instead of every page change.
@@ -9,6 +9,13 @@ appne.controller('AppCtrl', function($scope, $ionicModal, $timeout,LoginService)
   //$scope.$on('$ionicView.enter', function(e) {
   //});
   
+  //localStorage.removeItem('USER_KEY');
+  if(localStorage.getItem('USER_KEY')!== null){
+
+    $state.go("app.home");
+  }
+
+
   // Form data for the login modal
   $scope.loginData = {};
 
@@ -29,11 +36,22 @@ appne.controller('AppCtrl', function($scope, $ionicModal, $timeout,LoginService)
   // Perform the login action when the user submits the login form
   $scope.doLogin = function() {
 
-    console.log('Doing login', $scope.loginData);
+    /*var check = {"check1":"hi"}
+    localStorage.setItem("checking",JSON.stringify(check));*/
+    //console.log('Doing login', $scope.loginData);
     LoginService.GetUserDetails($scope.loginData).then(function(vals){
 
+      console.log('Doing login', vals["data"]['model']['id']);
+
+      var uservar = {"userKey":vals["data"]['model']['token'],"userID":vals["data"]['model']['id']};
+       localStorage.setItem('USER_KEY',JSON.stringify(uservar));
+        $state.go("app.home");
+      /*var laboo = localStorage.getItem('checking');
+      var taboo = JSON.parse(laboo);
+      alert(taboo.check1);*/
       //$scope.userDetails = vals;
-      console.log('Doing login', vals);
+      //console.log('Doing login', vals["data"]['model']['token']);
+
       });
 
     // Simulate a login delay. Remove this and replace with your login
@@ -47,21 +65,17 @@ appne.controller('AppCtrl', function($scope, $ionicModal, $timeout,LoginService)
 appne.controller('BrowseDetailsCtrl', function($scope,$location,BrowseService) {
   
   console.log("BrowseDetailsCtrl");
-var obsDetails = [];
+
 
 var obsId = $location.path().split("/")[3];
 
 //console.log(typeof(newUrl.split("/")[3]));
 //console.log(obsId);
-BrowseService.GetBroseInfo().then(function(data) {
 
-   obsDetails = data.data.observationInstanceList;
-      //console.log(obsDetails.length);
-browsingArray($scope,obsDetails,obsId)
+$scope.obsDetails=BrowseService.getObsList()
 
-});
-
-
+//console.log($scope.obsDetails);
+browsingArray($scope,$scope.obsDetails,obsId)
 
   
     //console.log(imgDetails);
@@ -216,13 +230,27 @@ appne.controller('GPSController', function($scope,$location) {
 
 
 
+appne.controller('HomeController',[ '$scope', '$http', 'BrowseService', function($scope,$http,BrowseService){
+  
+  $scope.zip="hi";
+  
+BrowseService.GetBrowseInfo().then(function(speciesGroup){
 
-appne.controller('ListController',[ '$scope', '$http', function($scope,$http,BrowseService){
-  console.log("List");
+  console.log(speciesGroup);
+
+} );
+
+  
+ 
+}]);
+
+
+
+appne.controller('ListController',[ '$scope', '$http', 'BrowseService', function($scope,$http,BrowseService){
+  console.log("hi");
   $scope.details = [];
   $scope.innerDetails = [];
-  
-  $http.get('js/data3.json').success(function(data){
+  /*$http.get('js/data3.json').success(function(data){
 
     //$scope.artists = data;
     
@@ -230,11 +258,41 @@ appne.controller('ListController',[ '$scope', '$http', function($scope,$http,Bro
     console.log(data.observationInstanceList);
     arrayData($scope,data.observationInstanceList,1);
     
-  });
+  });*/
+/*BrowseService.GetBrowseInfo().then(function(speciesGroup){
+
+  console.log(speciesGroup);
+} );*/
+
+console.log(BrowseService.getGroupVal());
+
+$scope.listParams = {
+  offset:0,
+  type:"nearBy",
+  maxRadius:50000
+}
+
+BrowseService.GetBrowseList($scope.listParams).then(function(obsList){
+
+  console.log("hel");
+  arrayData($scope,obsList["data"]["model"]["observationInstanceList"],1,BrowseService);
+} );
+
   $scope.loadMore = function() {
     $scope.noMoreItemsAvailable = false;
+
+    $scope.listParams.offset = $scope.listParams.offset + 24;
     
-    $http.get('js/data.json').success(function(data) {
+
+
+    BrowseService.GetBrowseList($scope.listParams).then(function(obsList){
+
+      console.log(obsList);
+      arrayData($scope,obsList["data"]["model"]["observationInstanceList"],2,BrowseService);
+    } );
+
+    $scope.$broadcast('scroll.infiniteScrollComplete');
+    /*$http.get('js/data.json').success(function(data) {
       //console.log(data.observationInstanceList);
       arrayData($scope,data.observationInstanceList,2);
       
@@ -242,7 +300,7 @@ appne.controller('ListController',[ '$scope', '$http', function($scope,$http,Bro
 //$timeout(function() {
   $scope.$broadcast('scroll.infiniteScrollComplete');
 //});
-    });
+    });*/
   };
 
 
@@ -250,25 +308,40 @@ appne.controller('ListController',[ '$scope', '$http', function($scope,$http,Bro
 }]);
 
 
-appne.controller('JoinGroupCtrl',[ '$scope', '$http', function($scope,$http){
+appne.controller('JoinGroupCtrl',[ '$scope', '$http','$compile','UserGroupService', function($scope,$http,$compile,UserGroupService){
   console.log("jgroup");
-  $http.get('js/userGroup.json').success(function(data){
+
+
+  /*$http.get('js/userGroup.json').success(function(data){
     //$scope.artists = data;
     //console.log($scope.artists.observationInstanceList );
     userGroupData($scope,data.userGroupInstanceList);
     
-  });
-   $http.get('js/joinedGroup.json').success(function(data){
+  });*/
+UserGroupService.GetUserGroups().then(function(groups){
+
+  console.log(groups);
+  userGroupData($scope,groups['data']['model'].userGroupInstanceList);
+});
+   /*$http.get('js/joinedGroup.json').success(function(data){
     //$scope.artists = data;
     console.log(data.observations );
     checkGroup($scope,data.observations);
     
-  });
+  });*/
+
+  UserGroupService.GetJoinedGroups().then(function(userGroups){
+
+  console.log(userGroups);
+  checkGroup($scope,userGroups['data']['model'].observations,$compile);
+  //userGroupData($scope,groups['data']['model'].userGroupInstanceList);
+});
 }]);
 
 
-function arrayData($scope,observationInstanceList,num){
+function arrayData($scope,observationInstanceList,num,BrowseService){
 
+BrowseService.setObsList(observationInstanceList);
   console.log("hi");
   //var arr = [];
   var sciName;
@@ -282,13 +355,15 @@ function arrayData($scope,observationInstanceList,num){
     if(Object.keys(observationInstanceList[i].maxVotedReco).length >0){
 
       if(observationInstanceList[i].maxVotedReco.hasOwnProperty('commonNamesRecoList')){
-            commonname = observationInstanceList[i].maxVotedReco.commonNamesRecoList[0];
+            commonname = observationInstanceList[i].maxVotedReco.commonNamesRecoList[0]["name"];
+        }else {
+          commonname="";
         }
 
         if(observationInstanceList[i].maxVotedReco.hasOwnProperty('sciNameReco')){
                 sciName = observationInstanceList[i].maxVotedReco.sciNameReco.name;
 
-          }
+          } 
       
     }else{
       sciName="Unknown";
@@ -311,6 +386,8 @@ function arrayData($scope,observationInstanceList,num){
   }
   
 $scope.details = $scope.details.concat($scope.arr);
+//BrowseService.setObsList($scope.details);
+ 
 console.log($scope.details);
 
 }
@@ -328,7 +405,7 @@ function userGroupData($scope,userGroupInstanceList){
   console.log(usrGrp);
 }
 
-function checkGroup($scope,joinedgroup){
+function checkGroup($scope,joinedgroup,$compile){
 
   var joinGrpid;
 
@@ -337,8 +414,8 @@ function checkGroup($scope,joinedgroup){
     joinGrpid = joinedgroup[i].id;
     console.log(joinGrpid);
     $(".button"+joinGrpid).hide();
-    $(".joinedicon"+joinGrpid).addClass(" icon ion-checkmark-round");
-
+    $(".joinedicon"+joinGrpid).addClass($compile("icon ion-checkmark-round"));
+     
   }
  
   
