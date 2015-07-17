@@ -169,18 +169,18 @@ appne.controller('NewObservationCtrl', function($scope,$state,$http,LocationServ
       alert("user");
     }
 
-    ionic.Platform.ready(function() {
-
-   LocationService.GetLocation().then(function(data){
-    console.log(data.latitude,data.longitude);
+    //ionic.Platform.ready(function() {
+console.log(LocationService);
+   var data = LocationService.getCurrentLocation()//.then(function(data){
+    console.log(data);
       var code="https://maps.googleapis.com/maps/api/geocode/json?latlng="+data.latitude+","+data.longitude;
       
       $http.get(code).success(function(dataval){
             //console.log(dataval.results[0]);
             $("#Locationval").text(dataval.results[0]["formatted_address"])
           });
-    });
- });
+    //});
+ //});
 
 
 
@@ -192,6 +192,7 @@ appne.controller('NewObservationCtrl', function($scope,$state,$http,LocationServ
 
 
 });
+
 
 
 
@@ -233,9 +234,12 @@ appne.controller('GPSController', function($scope,$location) {
 
 
 
-appne.controller('HomeController',[ '$scope', '$http', 'BrowseService', function($scope,$http,BrowseService){
+appne.controller('HomeController',[ '$scope', '$http', 'BrowseService','LocationService', function($scope,$http,BrowseService,LocationService){
   
-  $scope.zip="hi";
+
+  LocationService.GetLocation().then(function(data){
+  console.log(data);
+  });
   
 BrowseService.GetBrowseInfo().then(function(speciesGroup){
 
@@ -243,11 +247,56 @@ BrowseService.GetBrowseInfo().then(function(speciesGroup){
 
 } );
 
-  
- 
+
 }]);
 
+appne.controller('MyCollectionCtrl',[ '$scope', '$http', 'BrowseService','LocationService', function($scope,$http,BrowseService,LocationService){
 
+//console.log($("#myCollectionMsg").html());
+
+
+
+$scope.details = [];
+  $scope.innerDetails = [];
+
+var tokenvar = localStorage.getItem('USER_KEY');
+var tokenvar1 = JSON.parse(tokenvar);
+var userid = tokenvar1.userID;
+
+$scope.listParams = {
+  "offset": 0,
+  "user": userid
+}
+
+BrowseService.GetBrowseList($scope.listParams).then(function(obsList){
+
+  //alert(obsList["data"]["model"]["observationInstanceList"].length);
+  if(obsList["data"]["model"]["observationInstanceList"].length > 0){
+    $("div #myCollectionList").show();
+    arrayData($scope,obsList["data"]["model"]["observationInstanceList"],1,BrowseService);
+  } else {
+    $("div #myCollectionMsg").show();
+  }
+} );
+
+$scope.loadMore = function() {
+    $scope.noMoreItemsAvailable = false;
+
+    $scope.listParams.offset = $scope.listParams.offset + 24;
+    
+
+
+    BrowseService.GetBrowseList($scope.listParams).then(function(obsList){
+
+      console.log(obsList);
+      arrayData($scope,obsList["data"]["model"]["observationInstanceList"],2,BrowseService);
+    } );
+
+    $scope.$broadcast('scroll.infiniteScrollComplete');
+    
+  };
+
+}]);
 
 appne.controller('ListController',[ '$scope', '$http', 'BrowseService', function($scope,$http,BrowseService){
   console.log("hi");
@@ -267,7 +316,7 @@ appne.controller('ListController',[ '$scope', '$http', 'BrowseService', function
   console.log(speciesGroup);
 } );*/
 
-console.log(BrowseService.getGroupVal());
+//console.log(BrowseService.getGroupVal());
 
 $scope.listParams = {
   offset:0,
@@ -310,6 +359,51 @@ BrowseService.GetBrowseList($scope.listParams).then(function(obsList){
  
 }]);
 
+appne.controller('ObsNearByCtrl', [ '$scope', '$http', 'BrowseService','LocationService', function($scope,$http,BrowseService,LocationService){
+
+ $scope.details = [];
+  $scope.innerDetails = [];
+
+
+
+$scope.listParams = {
+  "offset":0,
+  "type":"nearBy",
+  "maxRadius":50000,
+  "long":'',
+  "lat":''
+}
+var location = LocationService.getCurrentLocation();
+
+$scope.listParams["long"] = location["longitude"];
+$scope.listParams["lat"] = location["latitude"];
+
+
+BrowseService.GetBrowseList($scope.listParams).then(function(obsList){
+
+  console.log("hel");
+  arrayData($scope,obsList["data"]["model"]["observationInstanceList"],1,BrowseService);
+} );
+
+  $scope.loadMore = function() {
+    $scope.noMoreItemsAvailable = false;
+
+    $scope.listParams.offset = $scope.listParams.offset + 24;
+    
+
+
+    BrowseService.GetBrowseList($scope.listParams).then(function(obsList){
+
+      console.log(obsList);
+      arrayData($scope,obsList["data"]["model"]["observationInstanceList"],2,BrowseService);
+    } );
+
+    $scope.$broadcast('scroll.infiniteScrollComplete');
+    
+  };
+  
+}]);
+
 
 appne.controller('JoinGroupCtrl',[ '$scope', '$http','$compile','UserGroupService', function($scope,$http,$compile,UserGroupService){
   console.log("jgroup");
@@ -321,6 +415,8 @@ appne.controller('JoinGroupCtrl',[ '$scope', '$http','$compile','UserGroupServic
     userGroupData($scope,data.userGroupInstanceList);
     
   });*/
+//console.log($("div #join .hell").html());
+//$("div #join .hell").hide()
 UserGroupService.GetUserGroups().then(function(groups){
 
   console.log(groups['data']['model']);

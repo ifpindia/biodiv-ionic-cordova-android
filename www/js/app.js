@@ -125,6 +125,26 @@ angular.module('starter', ['ionic', 'starter.controllers','starter.services']).c
       }
     })
 
+    .state('app.obsrvationnearby', {
+      url: "/obsrvationnearby",
+      views: {
+        'menuContent': {
+          templateUrl: "templates/observation_list.html",
+          controller: 'ObsNearByCtrl'
+        }
+      }
+    })
+
+    .state('app.mycollection', {
+      url: "/mycollection",
+      views: {
+        'menuContent': {
+          templateUrl: "templates/myCollection.html",
+          controller: 'MyCollectionCtrl'
+        }
+      }
+    })
+
   .state('app.playlsit', {
     url: "/playlists/:playlistId",
     views: {

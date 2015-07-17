@@ -99,6 +99,9 @@ appnService.factory('LocationService', function($q){
             d.resolve(currentLocation);
         });
         return d.promise
+	},
+	getCurrentLocation: function(){
+		return currentLocation;
 	}
 	};
 
