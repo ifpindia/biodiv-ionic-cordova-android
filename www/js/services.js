@@ -122,7 +122,7 @@ appnService.factory('UserGroupService', function($http,ApiEndpoint){
 		GetUserGroups: function(){
 				return $http({
 					method : "GET",
-					url : ApiEndpoint.url + '/group',
+					url : ApiEndpoint.url + '/group/list',
 					headers : {
 						"X-Auth-Token":token
 					},
@@ -149,7 +149,24 @@ appnService.factory('UserGroupService', function($http,ApiEndpoint){
 					 //console.log(data);
 					//return items;
 			    }).error(function(data, status, headers, config) {
-							console.log("Auth.signin.error!")
+							console.log("get usrgrp error")
+			        		
+			    });
+		},
+		JoinGroup: function(id){
+			console.log(token);
+			return $http({
+					method : "GET",
+					url : ApiEndpoint.url + '/group/'+ id +'/joinUs',
+					headers : {"X-Auth-Token":token}
+					//params : {"id":id}
+				}).success(function(data) {
+					console.log("joining success!")
+				
+					 //console.log(data);
+					//return items;
+			    }).error(function(data, status, headers, config) {
+							console.log("joining error!")
 			        		
 			    });
 		}

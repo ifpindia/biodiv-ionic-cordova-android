@@ -4,11 +4,10 @@
          <ion-list class="item-icon-right">
          <ion-item class="item item-button-right" ng-repeat='item in usrGrpDetails'>
          <h2>{{item.name}}</h2>
-         <button class="button button-large button-balanced button{{item.id}}">Join</button>
-         <i class="joinedicon{{item.id}}" ></i>
+         <button class="button button-large button-balanced" id="button{{item.id}}" ng-click='join("{{item.id}}","{{item.name}}");'>Join</button>
+         <i id="joinedicon{{item.id}}" ></i>
          </ion-item>
          </ion-list>
-         <h1 clas="hell">hi</h1>
          </div>
         </ion-content> 
 </ion-view>

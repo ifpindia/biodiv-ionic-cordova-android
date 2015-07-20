@@ -415,12 +415,12 @@ appne.controller('JoinGroupCtrl',[ '$scope', '$http','$compile','UserGroupServic
     userGroupData($scope,data.userGroupInstanceList);
     
   });*/
-//console.log($("div #join .hell").html());
-//$("div #join .hell").hide()
+console.log($(".button").html());
+//$("div .hell").hide()
 UserGroupService.GetUserGroups().then(function(groups){
 
   console.log(groups['data']['model']);
-  userGroupData($scope,groups['data']['model'].userGroupInstanceList);
+  userGroupData($scope,groups['data']['model'].userGroupInstanceList,UserGroupService);
 });
    /*$http.get('js/joinedGroup.json').success(function(data){
     //$scope.artists = data;
@@ -429,12 +429,31 @@ UserGroupService.GetUserGroups().then(function(groups){
     
   });*/
 
-  UserGroupService.GetJoinedGroups().then(function(userGroups){
+  /*UserGroupService.GetJoinedGroups().then(function(userGroups){
 
   console.log(userGroups);
-  checkGroup($scope,userGroups['data']['model'].observations,$compile);
+  console.log($("#button1 ").html());
+  checkGroup($scope,userGroups['data']['model'].observations);
   //userGroupData($scope,groups['data']['model'].userGroupInstanceList);
-});
+});*/
+  $scope.join = function(id,name){
+
+    console.log(id,name);
+    console.log(UserGroupService);
+    if (confirm("Do you really want to join in "+name) == true) {
+
+       UserGroupService.JoinGroup(id).then(function(groups){
+
+        console.log(groups);
+        $("#button"+id).hide();
+        $("#joinedicon"+id).addClass("icon ion-checkmark-round");
+
+      });
+    } else {
+        
+    }
+  }
+
 }]);
 
 
@@ -491,7 +510,7 @@ console.log($scope.details);
 
 }
 
-function userGroupData($scope,userGroupInstanceList){
+function userGroupData($scope,userGroupInstanceList,UserGroupService){
 
   var usrGrp = [];
 
@@ -502,9 +521,18 @@ function userGroupData($scope,userGroupInstanceList){
   }
   $scope.usrGrpDetails = usrGrp;
   console.log(usrGrp);
+
+  UserGroupService.GetJoinedGroups().then(function(userGroups){
+
+    console.log(userGroups);
+    console.log($("#button1 ").html());
+    checkGroup($scope,userGroups['data']['model'].observations);
+    //userGroupData($scope,groups['data']['model'].userGroupInstanceList);
+  });
+
 }
 
-function checkGroup($scope,joinedgroup,$compile){
+function checkGroup($scope,joinedgroup){
 
   var joinGrpid;
 
@@ -512,8 +540,9 @@ function checkGroup($scope,joinedgroup,$compile){
 
     joinGrpid = joinedgroup[i].id;
     console.log(joinGrpid);
-    $(".button"+joinGrpid).hide();
-    $(".joinedicon"+joinGrpid).addClass($compile("icon ion-checkmark-round"));
+    //console.log($("#button1 ").html());
+    $("#button"+joinGrpid).hide();
+    $("#joinedicon"+joinGrpid).addClass("icon ion-checkmark-round");
      
   }
  
