@@ -2,7 +2,8 @@ var appnService = angular.module('starter.services', [])
 
 appnService.factory('LoginService', function($http, ApiEndpoint){
 
-    var GetUserDetails = function(data){
+	return {
+     GetUserDetails : function(data){
         return $http({
                 method: "POST",
                 url : ApiEndpoint.url + '/login',
@@ -16,11 +17,48 @@ appnService.factory('LoginService', function($http, ApiEndpoint){
                 alert("Please checkyour username and password");
         });
 
+    },
+
+    /*return {
+        'GetUserDetails':GetUserDetails
+    };*/
+    RegisterUser : function(data){
+    	$(".modal").show();
+    	return $http({
+                method: "POST",
+                url : ApiEndpoint.url + '/register/user',
+                params : data,
+            }).success(function(result) {
+                //console.log("Auth.signin.success!")
+                console.log(result);
+                //return result;
+            }).error(function(d, status, headers, config) {
+                
+                //alert("Please checkyour username and password");
+        });
+    },
+
+    ForgotPassword : function(email){
+    	$(".modal").show();
+    	return $http({
+                method: "POST",
+                url : ApiEndpoint.url + '/register/forgotPassword?email='+email,
+               // params : data,
+            }).success(function(result) {
+                //console.log("Auth.signin.success!")
+                console.log(result);
+                //return result;
+            }).error(function(d, status, headers, config) {
+                
+                console.log(d);
+                //alert("Please checkyour username and password");
+        });
     }
 
-    return {
-        'GetUserDetails':GetUserDetails
-    };
+    /*return {
+        'RegisterUser':RegisterUser
+    };*/
+	};
 });
 
 appnService.factory('BrowseService', function($http,ApiEndpoint){
@@ -53,6 +91,7 @@ appnService.factory('BrowseService', function($http,ApiEndpoint){
 			return items;
 		},
 		GetBrowseList: function(data){
+			$(".modal").show();
 			return $http({
 					method : "GET",
 					url : ApiEndpoint.url + '/observation/list',
@@ -89,6 +128,12 @@ appnService.factory('LocationService', function($q){
 		longitude:""
 	}
 
+	var userSelectLoc = {
+		latitude:"",
+		longitude:""
+	}
+
+
 	return {
 		GetLocation : function(){
 				var d = $q.defer();
@@ -102,6 +147,15 @@ appnService.factory('LocationService', function($q){
 	},
 	getCurrentLocation: function(){
 		return currentLocation;
+	},
+	SetUserSelectedLocation: function(data){
+		console.log(data.A);
+		userSelectLoc.latitude = data.A;
+		userSelectLoc.longitude = data.F;
+		return null;
+	},
+	GetUserSelectedLocation: function(){
+		return userSelectLoc;
 	}
 	};
 
@@ -117,6 +171,7 @@ appnService.factory('UserGroupService', function($http,ApiEndpoint){
       //alert(token);
       var userId = tokenvar1.userID;
       //alert(userId);
+      var userGroups;
 
 	return {
 		GetUserGroups: function(){
@@ -167,12 +222,103 @@ appnService.factory('UserGroupService', function($http,ApiEndpoint){
 					//return items;
 			    }).error(function(data, status, headers, config) {
 							console.log("joining error!")
-			        		
+							console.log(data);
+				        		
 			    });
+		},
+		SetUserJoinGroups: function(groups){
+
+			userGroups = groups;
+			return null;
+		},
+		GetUserJoinGroups: function(){
+			return userGroups;
 		}
 	};
 
 });
+
+
+
+/*appnService.factory('FileService', function() {
+  var images;
+  var IMAGE_STORAGE_KEY = 'images';
+ 
+  function getImages() {
+    var img = window.localStorage.getItem(IMAGE_STORAGE_KEY);
+    if (img) {
+      images = JSON.parse(img);
+    } else {
+      images = [];
+    }
+    return images;
+  };
+ 
+  function addImage(img) {
+    images.push(img);
+    window.localStorage.setItem(IMAGE_STORAGE_KEY, JSON.stringify(images));
+  };
+ 
+  return {
+    storeImage: addImage,
+    images: getImages
+  }
+})
+
+appnService.factory('ImageService', function($cordovaCamera, FileService, $q, $cordovaFile) {
+ 
+  function makeid() {
+    var text = '';
+    var possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+ 
+    for (var i = 0; i < 5; i++) {
+      text += possible.charAt(Math.floor(Math.random() * possible.length));
+    }
+    return text;
+  };
+ 
+  function optionsForType(type) {
+    var source;
+    switch (type) {
+      case 0:
+        source = Camera.PictureSourceType.CAMERA;
+        break;
+      case 1:
+        source = Camera.PictureSourceType.PHOTOLIBRARY;
+        break;
+    }
+    return {
+      destinationType: Camera.DestinationType.FILE_URI,
+      sourceType: source,
+      allowEdit: false,
+      encodingType: Camera.EncodingType.JPEG,
+      popoverOptions: CameraPopoverOptions,
+      saveToPhotoAlbum: true
+    };
+  }
+ 
+  function saveMedia(type) {
+    return $q(function(resolve, reject) {
+      var options = optionsForType(type);
+ 
+      $cordovaCamera.getPicture(options).then(function(imageUrl) {
+        var name = imageUrl.substr(imageUrl.lastIndexOf('/') + 1);
+        var namePath = imageUrl.substr(0, imageUrl.lastIndexOf('/') + 1);
+        var newName = makeid() + name;
+        $cordovaFile.copyFile(namePath, name, cordova.file.dataDirectory, newName)
+          .then(function(info) {
+            FileService.storeImage(newName);
+            resolve();
+          }, function(e) {
+            reject();
+          });
+      });
+    })
+  }
+  return {
+    handleMediaDialog: saveMedia
+  }
+});*/
 
 
 

@@ -4,8 +4,9 @@
 // 'starter' is the name of this angular module example (also set in a <body> attribute in index.html)
 // the 2nd parameter is an array of 'requires'
 // 'starter.controllers' is found in controllers.js
-angular.module('starter', ['ionic', 'starter.controllers','starter.services']).constant('ApiEndpoint', {
-    url: 'http://localhost:8100/api'
+angular.module('starter', ['ionic', 'ngCordova', 'starter.controllers','starter.services']).constant('ApiEndpoint', {
+    //url: 'http://localhost:8100/api'
+    url:'http://localhost:8100/api'
 })
 
 
@@ -28,11 +29,32 @@ angular.module('starter', ['ionic', 'starter.controllers','starter.services']).c
 .config(function($stateProvider, $urlRouterProvider) {
   $stateProvider
 
+
+  .state('login', {
+    url: "/login",
+    //views: {
+      //'menuContent':{
+        templateUrl: "templates/login.html",
+        controller: 'AppCtrl'
+    // }
+    //}
+  })
+
+  .state('newUser', {
+    url: "/newUser",
+    //views: {
+      //'menuContent':{
+        templateUrl: "templates/newUser.html",
+        controller: 'NewUserCtrl'
+    // }
+    //}
+  })
+
   .state('app', {
     url: "/app",
     abstract: true,
     templateUrl: "templates/menu.html",
-    
+    //controller: 'LogoutController'
     
   })
 
@@ -63,15 +85,7 @@ angular.module('starter', ['ionic', 'starter.controllers','starter.services']).c
     }
     })*/
 
-.state('app.login', {
-    url: "/login",
-    views: {
-      'menuContent':{
-        templateUrl: "templates/login.html",
-        controller: 'AppCtrl'
-     }
-    }
-  })
+
 
   .state('app.newObservation', {
     url: "/newObservation",
@@ -155,7 +169,7 @@ angular.module('starter', ['ionic', 'starter.controllers','starter.services']).c
     }
   });
   // if none of the above states are matched, use this as the fallback
-  $urlRouterProvider.otherwise('/app/home');
+  $urlRouterProvider.otherwise('/login');
 });
 
 

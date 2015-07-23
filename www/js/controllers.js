@@ -1,6 +1,6 @@
 var appne = angular.module('starter.controllers', [])
 
-appne.controller('AppCtrl', function($scope, $state,$ionicModal, $timeout,LoginService) {
+appne.controller('AppCtrl', function($scope, $state,$ionicModal, $ionicSideMenuDelegate, $timeout,LoginService,$ionicPopup,$cordovaToast) {
   
   // With the new view caching in Ionic, Controllers are only called
   // when they are recreated or on app start, instead of every page change.
@@ -10,6 +10,7 @@ appne.controller('AppCtrl', function($scope, $state,$ionicModal, $timeout,LoginS
   //});
   
   //localStorage.removeItem('USER_KEY');
+  $ionicSideMenuDelegate.canDragContent(false);
   if(localStorage.getItem('USER_KEY')!== null){
 
     $state.go("app.home");
@@ -39,6 +40,7 @@ appne.controller('AppCtrl', function($scope, $state,$ionicModal, $timeout,LoginS
     /*var check = {"check1":"hi"}
     localStorage.setItem("checking",JSON.stringify(check));*/
     //console.log('Doing login', $scope.loginData);
+    localStorage.removeItem('USER_KEY');
     LoginService.GetUserDetails($scope.loginData).then(function(vals){
 
       console.log('Doing login', vals);
@@ -56,12 +58,107 @@ appne.controller('AppCtrl', function($scope, $state,$ionicModal, $timeout,LoginS
 
     // Simulate a login delay. Remove this and replace with your login
     // code if using a login system
+   
     $timeout(function() {
       //$scope.closeLogin();
     }, 1000);
   };
+  $scope.forgotPassword = function() {
+    $ionicPopup.prompt({
+    title: 'Forgot Password ?:',
+    subTitle: 'Password will be sent to this email id',
+    inputType: 'text',
+    inputPlaceholder: 'Email'
+  }).then(function(email) {
+   //console.log('Your password is', res);
+   if(!validateEmail(email)){
+        //alert("Invalid email");
+       showToast($cordovaToast,"Please enter a valid Email")
+        return ;
+      }
+ LoginService.ForgotPassword(email).then(function(res){
+
+          console.log(res);
+          $(".modal").hide();
+          showToast($cordovaToast,res.data.msg);
+       });
+
+ });
+    
+  }
 })
 
+
+function showToast($cordovaToast,message) {
+  $cordovaToast.show(message, "long", "bottom").then(function(success) {
+            console.log("The toast was shown");
+        }, function (error) {
+            console.log("The toast was not shown due to " + error);
+        });
+        //else $ionicLoading.show({ template: message, noBackdrop: true, duration: 2000 });
+    }
+
+appne.controller('NewUserCtrl', function($scope,LoginService,$cordovaToast){
+
+  $scope.register = {
+    name:"",
+    email:"",
+    password:"",
+    password2:""
+  };
+
+   $scope.doRegister = function() {
+
+      var name = $scope.register.name;
+      var email = $scope.register.email;
+      var password = $scope.register.password;
+      $scope.register.password2 = password;
+      console.log(email);
+          if(name.length == 0){
+            showToast($cordovaToast,"name cannot be empty");
+            return ;
+          }
+          //console.log(validateEmail(email));
+          if(!validateEmail(email)){
+            showToast($cordovaToast,"Invalid email");
+            return ;
+          }
+          if(password.length <5){
+            showToast($cordovaToast,"password length has to be 5 characters");
+            return ;
+          }
+
+          //console.log(LoginService);
+
+       LoginService.RegisterUser($scope.register).then(function(vals){
+
+          console.log(vals);
+          $(".modal").hide();
+          showToast($cordovaToast,vals.data.msg);
+       });
+
+          //$(".modal").show();
+   }
+
+   
+});
+
+function validateEmail(email) { 
+  // http://stackoverflow.com/a/46181/11236
+  
+    var re = /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+    return re.test(email);
+}
+
+
+appne.controller('LogoutController', function($scope) {
+
+alert("hello");
+   $scope.logout = function(){
+        console.log("logout");
+        localStorage.removeItem('USER_KEY');
+      } 
+})
 appne.controller('BrowseDetailsCtrl', function($scope,$location,BrowseService) {
   
   console.log("BrowseDetailsCtrl");
@@ -157,19 +254,143 @@ function browsingArray($scope,obsDetails,obsId){
 
 
 
-appne.controller('NewObservationCtrl', function($scope,$state,$http,LocationService) {
+appne.controller('NewObservationCtrl', function($scope,$state,$http,$cordovaCamera,LocationService,$ionicPopup,$cordovaDevice, $cordovaFile, $ionicPlatform,  $ionicActionSheet, UserGroupService) {
+    
+    //alert("hello");
     $(function () {
       $('#check').change(function () {
         console.log(this.checked);
           $(".check1").toggle(this.checked);
       });
   });
-
     $scope.userGroup = function(){
-      alert("user");
+      //alert("hhh");
+      $scope.usrGrp =[]
+
+      var groups = UserGroupService.GetUserJoinGroups()
+      console.log(groups);
+      var instanceList = groups['data']['model']['observations'];
+      if(instanceList.length>0){
+        for(var i=0; i<instanceList.length; i++){
+          $scope.usrGrp.push({"id":instanceList[i].id,"name":instanceList[i].title})
+        }
+        console.log($scope.usrGrp);
+        var listPopup = $ionicPopup.show({
+         template: '<ion-list>                                '+
+                   '  <ion-item ng-repeat="usrgrps in usrGrp " ng-click="uploadTo({{usrgrps.id}});" > '+
+                   '    {{usrgrps.name}}                             '+
+                   '  </ion-item>                             '+
+                   '</ion-list>                               ',
+         
+         title: 'Choose Option',
+         scope: $scope,
+         buttons: [
+           { text: 'Cancel' },
+         ]
+       });   
+
+      } else {
+       var lispop = $ionicPopup.alert({
+                title: 'Success',
+                content: 'You have no joined groups'
+              });
+            
+      }
+      
     }
 
-    //ionic.Platform.ready(function() {
+    /*$scope.image = [];
+    $scope.browse = function(){
+
+      var listPopup = $ionicPopup.show({
+     template: '<ion-list>                                '+
+               '  <ion-item ng-click="camera();" class="listItem check1"> '+
+               '    Take a Picture                              '+
+               '  </ion-item>                             '+
+               '  <ion-item ng-click="camera();" class="listItem check1"> '+
+               '    Choose from Gallery                              '+
+               '  </ion-item>                             '+
+               '</ion-list>                               ',
+     
+     title: 'Choose Option',
+     scope: $scope,
+     buttons: [
+       { text: 'Cancel' },
+     ]
+   });   
+
+
+
+    }
+
+
+    }*/
+
+   
+  $scope.imgURI =[];
+ 
+  $scope.addMedia = function() {
+    $scope.hideSheet = $ionicActionSheet.show({
+      buttons: [
+        { text: 'Take photo' },
+        { text: 'Photo from library' }
+      ],
+      titleText: 'Add images',
+      cancelText: 'Cancel',
+      buttonClicked: function(index) {
+        $scope.addImage(index);
+      }
+    });
+  }
+ 
+  $scope.addImage = function(type) {
+    var z=1;
+    $scope.hideSheet();
+    //ImageService.handleMediaDialog(type).then(function() {
+     // $scope.$apply();
+    //});
+var source;
+    var val;
+
+  switch (type) {
+      case 0:
+        source = Camera.PictureSourceType.CAMERA;
+        val = true;
+
+        break;
+      case 1:
+        source = Camera.PictureSourceType.PHOTOLIBRARY;
+        val = false;
+        break;
+    }
+if(z==1){
+   //$("#imgContent").append('<ion-scroll direction="x" style="height:200px; min-height: 200px; overflow: scroll; white-space: nowrap;"><img ng-repeat="images in imgURI" ng-show="imgURI !== undefined"  ng-src="{{images}}" style="height:200px; padding: 5px 5px 5px 5px;"/></ion-scroll>');
+   z++;
+}
+
+var options = {
+    destinationType: Camera.DestinationType.DATA_URL,
+      sourceType: source,
+      allowEdit: false,
+      encodingType: Camera.EncodingType.JPEG,
+      popoverOptions: CameraPopoverOptions,
+      saveToPhotoAlbum: val
+  };
+
+  console.log(options);
+  $cordovaCamera.getPicture(options).then(function(imageUrl) {
+    $("#imgContent").show();
+    var link =  "data:image/jpeg;base64," +imageUrl;
+      $scope.imgURI.push(link);
+     console.log($scope.imgURI);
+  console.log($scope.imageLink);
+        }, function(err) {
+            // An error occured. Show a message to the user
+        });
+
+}
+
+
 console.log(LocationService);
    var data = LocationService.getCurrentLocation()//.then(function(data){
     console.log(data);
@@ -194,12 +415,40 @@ console.log(LocationService);
 });
 
 
+function optionsForType(type){
 
+  var source;
+    var val;
+    console.log("type"+type)
+    switch (type) {
+      case 0:
+        source = Camera.PictureSourceType.CAMERA;
+        val = true;
+        break;
+      case 1:
+        source = Camera.PictureSourceType.PHOTOLIBRARY;
+        val = false;
+        break;
+    }
+    return {
+      destinationType: Camera.DestinationType.FILE_URI,
+      sourceType: source,
+      allowEdit: false,
+      encodingType: Camera.EncodingType.JPEG,
+      popoverOptions: CameraPopoverOptions,
+      saveToPhotoAlbum: val
+    };
+}
 
-appne.controller('GPSController', function($scope,$location) {
+appne.controller('newobs2', function($scope, $state, LocationService) {
+
+  //alert("hi");
+  });
+
+appne.controller('GPSController', function($scope, $state,$http, LocationService) {
 
 //alert($location.path());
- var myLatlng = new google.maps.LatLng(37.3000, -120.4833);
+ var myLatlng = new google.maps.LatLng(11.9384867, 79.8352657);
  
         var mapOptions = {
             center: myLatlng,
@@ -217,26 +466,67 @@ appne.controller('GPSController', function($scope,$location) {
           console.log($scope.mapval);
           
 
-            map.setCenter(new google.maps.LatLng(pos.coords.latitude, pos.coords.longitude));
-            var myLocation = new google.maps.Marker({
+            /*map.setCenter(new google.maps.LatLng(pos.coords.latitude, pos.coords.longitude));
+              //map.setOptions({draggable: true});
+              var myLocation = new google.maps.Marker({
                 position: new google.maps.LatLng(pos.coords.latitude, pos.coords.longitude),
                 map: map,
-                title: "My Location"
+                title: "My Location",
+                draggable:true
             });
+              
+              myLocation.bindTo('position',map,'center');*/
+              changeMarker()
         });
+
+        
+        function changeMarker(){
+          $('<div/>').addClass('centerMarker').appendTo(map.getDiv())
+          var mp = $('.centerMarker');
+          mp.data('win',new google.maps.InfoWindow({content:'this is the center'}));
+          mp.data('win').bindTo('position',map,'center');
+          //console.log(loc);
+          google.maps.event.addListener(mp.data('win'), 'position_changed', function(){
+              //console.log('Current Latitude:',evt.latLng.lat(),'Current Longitude:',evt.latLng.lng());
+              console.log(mp.data('win').getPosition());
+              var locations = mp.data('win').getPosition();
+
+              LocationService.SetUserSelectedLocation(locations);
+
+              updating("texttop");
+              });
+        }
+
  
-        $scope.map = map;
+        $scope.doSomething = function(){
+          //console.log($('#Locationval').html());
+          updating("Locationval");
+          
+          $state.go("app.newObservation");
+        }
 
-
-
+        function updating(id){
+          var data = LocationService.GetUserSelectedLocation()//.then(function(data){
+          console.log(data);
+      var code="https://maps.googleapis.com/maps/api/geocode/json?latlng="+data.latitude+","+data.longitude;
+      
+      $http.get(code).success(function(dataval){
+            //console.log(dataval.results[0]);
+            $("#"+id).text(dataval.results[0]["formatted_address"])
+          });
+        }
 
 });
 
 
 
-appne.controller('HomeController',[ '$scope', '$http', 'BrowseService','LocationService', function($scope,$http,BrowseService,LocationService){
-  
 
+
+
+appne.controller('HomeController',[ '$scope', '$http', 'BrowseService','LocationService', '$ionicSideMenuDelegate','UserGroupService', function($scope,$http,BrowseService,LocationService,$ionicSideMenuDelegate, UserGroupService){
+  
+//$ionicSideMenuDelegate.canDragContent(true);
+console.log($ionicSideMenuDelegate);
   LocationService.GetLocation().then(function(data){
   console.log(data);
   });
@@ -246,6 +536,12 @@ BrowseService.GetBrowseInfo().then(function(speciesGroup){
   console.log(speciesGroup);
 
 } );
+
+UserGroupService.GetJoinedGroups().then(function(groups){
+
+  console.log(groups['data']['model']);
+  UserGroupService.SetUserJoinGroups(groups);
+});
 
 
 }]);
@@ -418,7 +714,7 @@ appne.controller('JoinGroupCtrl',[ '$scope', '$http','$compile','UserGroupServic
 console.log($(".button").html());
 //$("div .hell").hide()
 UserGroupService.GetUserGroups().then(function(groups){
-
+//var groups = UserGroupService.GetUserJoinGroups()
   console.log(groups['data']['model']);
   userGroupData($scope,groups['data']['model'].userGroupInstanceList,UserGroupService);
 });
@@ -502,7 +798,7 @@ BrowseService.setObsList(observationInstanceList);
     
     }
   }
-  
+  $(".modal").hide();
 $scope.details = $scope.details.concat($scope.arr);
 //BrowseService.setObsList($scope.details);
  

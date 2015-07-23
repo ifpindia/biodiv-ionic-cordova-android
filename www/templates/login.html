@@ -1,27 +1,27 @@
-<ion-view view-title="Login">
-  <ion-header-bar>
-    <h1 class="title">Login</h1>
-    
-  </ion-header-bar>
+<ion-view >
+  <div class="bar bar-header bar-positive">
+  <h1 class="title">Login</h1>
+</div>
   <ion-content>
+  <br><br><br>
     <form ng-submit="doLogin()">
       <div class="list">
         <label class="item item-input">
-          <span class="input-label">Username :</span>
-          <input type="text" ng-model="loginData.username">
+          <!--span class="input-label">Username :</span-->
+          <input type="text" ng-model="loginData.username" placeholder="Username">
         </label>
         <label class="item item-input">
-          <span class="input-label">Password :</span>
-          <input type="password" ng-model="loginData.password">
+          <!--span class="input-label">Password :</span-->
+          <input type="password" ng-model="loginData.password" placeholder="Password">
         </label>
         <label class="item">
           <button class="button button-block button-positive" type="submit">Log in</button>
         </label>
       </div>
       <div>
-        <a href="#/app/forgot-password" class="alignleft">New User</a>
+        <a href="#/newUser" class="alignleft">New User</a>
       
-        <a href="#/app/forgot-password" class="alignright">Forgot password ?</a>
+        <a href="#" class="alignright" ng-click="forgotPassword()">Forgot password ?</a>
       </div>
     </form>
   </ion-content>
