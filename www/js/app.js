@@ -6,7 +6,8 @@
 // 'starter.controllers' is found in controllers.js
 angular.module('starter', ['ionic', 'ngCordova', 'starter.controllers','starter.services']).constant('ApiEndpoint', {
     //url: 'http://localhost:8100/api'
-    url:'http://localhost:8100/api'
+    //url:'http://portal.wikwio.org/api'
+    url:'http://pamba.strandls.com/api'
 })
 
 
@@ -34,6 +35,7 @@ angular.module('starter', ['ionic', 'ngCordova', 'starter.controllers','starter.
     url: "/login",
     //views: {
       //'menuContent':{
+        cache:false,
         templateUrl: "templates/login.html",
         controller: 'AppCtrl'
     // }
@@ -139,8 +141,8 @@ angular.module('starter', ['ionic', 'ngCordova', 'starter.controllers','starter.
       }
     })
 
-    .state('app.obsrvationnearby', {
-      url: "/obsrvationnearby",
+    .state('app.observationnearby', {
+      url: "/observationnearby",
       views: {
         'menuContent': {
           templateUrl: "templates/observation_list.html",

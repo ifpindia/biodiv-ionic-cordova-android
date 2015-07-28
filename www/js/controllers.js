@@ -40,7 +40,7 @@ appne.controller('AppCtrl', function($scope, $state,$ionicModal, $ionicSideMenuD
     /*var check = {"check1":"hi"}
     localStorage.setItem("checking",JSON.stringify(check));*/
     //console.log('Doing login', $scope.loginData);
-    localStorage.removeItem('USER_KEY');
+    //localStorage.removeItem('USER_KEY');
     LoginService.GetUserDetails($scope.loginData).then(function(vals){
 
       console.log('Doing login', vals);
@@ -151,13 +151,16 @@ function validateEmail(email) {
 }
 
 
-appne.controller('LogoutController', function($scope) {
+appne.controller('LogoutController', function($scope,$state,$window) {
 
-alert("hello");
+//alert("hello");
    $scope.logout = function(){
         console.log("logout");
         localStorage.removeItem('USER_KEY');
+         $state.go("login");
+         //$window.location.reload(true)
       } 
+     
 })
 appne.controller('BrowseDetailsCtrl', function($scope,$location,BrowseService) {
   
@@ -254,15 +257,139 @@ function browsingArray($scope,obsDetails,obsId){
 
 
 
-appne.controller('NewObservationCtrl', function($scope,$state,$http,$cordovaCamera,LocationService,$ionicPopup,$cordovaDevice, $cordovaFile, $ionicPlatform,  $ionicActionSheet, UserGroupService) {
+appne.controller('NewObservationCtrl', function($scope,$state,$http,$cordovaCamera,LocationService,$ionicPopup,$cordovaDevice, $cordovaFile, $ionicPlatform,  $ionicActionSheet, $filter, $cordovaFileTransfer, ApiEndpoint, UserGroupService) {
     
     //alert("hello");
+    $scope.newobs ={
+      sciName    :'',
+      commonName :'',
+      notes : '',
+      boxVal : false
+    };
+    $scope.imgURI =[];
     $(function () {
       $('#check').change(function () {
-        console.log(this.checked);
           $(".check1").toggle(this.checked);
       });
   });
+
+     $(function () {
+      $('#dateSight').change(function () {
+          //alert($scope.newobs.date);
+        $scope.date = $filter('date')( $scope.newobs.date );
+        console.log($scope.date);
+        var currentDate = getDatetime();
+        //console.log(currentDate);
+        if(Date.parse($scope.date) > Date.parse(currentDate)){
+           showDailog("Please slect a valid date");
+           //return;
+        }else {
+          $scope.newobs.date = $filter('date')( $scope.newobs.date,"dd/MM/yyyy" );
+        }
+        console.log($scope.newobs.date)
+      });
+  });
+
+     
+  function getDatetime() {
+  var currentDate = $filter('date')(new Date);
+  //console.log($filter('date')(new Date));
+  return currentDate;
+};
+
+  $scope.submitNewObs = function(){
+    //console.log(document.getElementById("check").checked);
+    console.log("newobs");
+    console.log($scope.newobs);
+    console.log($scope.newobs.boxVal);
+    //var date = $filter('date')( $scope.newobs.date );
+    console.log($('#Locationval').text());
+    console.log(typeof($('#Locationval').text()));
+    validation();
+  }
+
+    function validation(){
+
+      //if($scope.newobs)
+
+      if($scope.imgURI.length == 0){
+        showDailog("You must submit atleast one image");
+        return;
+      }
+      if($scope.newobs.date == null){
+        showDailog("You must enter date");
+        return;
+      }
+      if($scope.newobs.boxVal == false){
+        //console.log($scope.newobs['sciName'].length());
+        if($scope.newobs['sciName'].length==0 && $scope.newobs['commonName'].length==0){
+          showDailog("Please enter all fields");
+          return;
+        }
+      }
+      console.log($('#Locationval').text());
+      if($('#Locationval').text() == 'Location'){
+        var confirmPopup = $ionicPopup.confirm({
+           title: 'Location',
+           template: 'you didnt entered Location. Default location will be taken'
+         });
+         confirmPopup.then(function(res) {
+           if(res) {
+            $scope.locationAddress = "Lally Tollendal Street, White Town, Puducherry, Puducherry 605002, India"; 
+            $('#Locationval').text($scope.locationAddress);
+            executeRequest();
+           } else {
+             console.log('You are not sure');
+             return;
+           }
+         });
+      }else {
+        executeRequest();
+      }
+      
+      
+    }
+
+    function executeRequest(){
+
+      var tokenvar = localStorage.getItem('USER_KEY');
+      var tokenvar1 = JSON.parse(tokenvar);
+      var token = tokenvar1.userKey;
+      var appkey = "fc9a88b5-fac9-4f01-bc12-70e148f40a7f";
+      var imageLink = $scope.imgURI[0] ;
+      console.log($scope.newobs);
+       var options = {
+            fileKey: "resources",
+            chunkedMode: false,
+            mimeType: "image/*",
+            httpMethod:"POST",
+            headers: {
+            "X-Auth-Token":token,
+            "X-AppKey":appkey
+          }
+        };
+
+       $cordovaFileTransfer.upload(ApiEndpoint.url+"/observation/upload_resource?resType=species.participation.Observation", imageLink, options).then(function(result) {
+            console.log("SUCCESS: " + result);
+            console.log(result.status);
+            consoe.log(result.observations.fileName)
+            $scope.resourseResponse = result ;
+        }, function(err) {
+            console.log("ERROR: " + JSON.stringify(err));
+        }, function (progress) {
+            // constant progress updates
+        });
+
+    }
+    function showDailog(message){
+
+      $ionicPopup.alert({
+          title: 'alert',
+          content: message//'You must submit atleast one image'
+        });
+    }
+
+
     $scope.userGroup = function(){
       //alert("hhh");
       $scope.usrGrp =[]
@@ -275,9 +402,9 @@ appne.controller('NewObservationCtrl', function($scope,$state,$http,$cordovaCame
           $scope.usrGrp.push({"id":instanceList[i].id,"name":instanceList[i].title})
         }
         console.log($scope.usrGrp);
-        var listPopup = $ionicPopup.show({
+         $scope.listPopup = $ionicPopup.show({
          template: '<ion-list>                                '+
-                   '  <ion-item ng-repeat="usrgrps in usrGrp " ng-click="uploadTo({{usrgrps.id}});" > '+
+                   '  <ion-item id="uGroup{{usrgrps.id}}" ng-repeat="usrgrps in usrGrp " ng-click="uploadTo({{usrgrps.id}});" > '+
                    '    {{usrgrps.name}}                             '+
                    '  </ion-item>                             '+
                    '</ion-list>                               ',
@@ -285,18 +412,43 @@ appne.controller('NewObservationCtrl', function($scope,$state,$http,$cordovaCame
          title: 'Choose Option',
          scope: $scope,
          buttons: [
-           { text: 'Cancel' },
+           { text: 'Ok' },
          ]
        });   
 
       } else {
        var lispop = $ionicPopup.alert({
                 title: 'Success',
-                content: 'You have no joined groups'
+                content: 'Join atleast one user groups'
               });
             
       }
       
+    }
+
+    $scope.userGroupId =[];
+    
+    $scope.uploadTo = function(id){
+      var addToArray = true;
+      $scope.listPopup.close();
+
+      //$('#uGroup'+id).addClass("addActive");
+
+      for(var i=0;i<$scope.userGroupId.length;i++){
+        if($scope.userGroupId[i] == id){
+          var index = $scope.userGroupId.indexOf(id);
+          if (index > -1) {
+              $scope.userGroupId.splice(index, 1);
+          }
+          addToArray = false;
+          
+        }
+      }
+      if(addToArray){
+        $scope.userGroupId.push(id);
+      }
+       $('#uGroupText').text($scope.userGroupId.length)
+      console.log($scope.userGroupId);
     }
 
     /*$scope.image = [];
@@ -327,7 +479,7 @@ appne.controller('NewObservationCtrl', function($scope,$state,$http,$cordovaCame
     }*/
 
    
-  $scope.imgURI =[];
+  
  
   $scope.addMedia = function() {
     $scope.hideSheet = $ionicActionSheet.show({
@@ -349,7 +501,7 @@ appne.controller('NewObservationCtrl', function($scope,$state,$http,$cordovaCame
     //ImageService.handleMediaDialog(type).then(function() {
      // $scope.$apply();
     //});
-var source;
+    var source;
     var val;
 
   switch (type) {
@@ -369,7 +521,7 @@ if(z==1){
 }
 
 var options = {
-    destinationType: Camera.DestinationType.DATA_URL,
+    destinationType: Camera.DestinationType.FILE_URI,
       sourceType: source,
       allowEdit: false,
       encodingType: Camera.EncodingType.JPEG,
@@ -379,14 +531,15 @@ var options = {
 
   console.log(options);
   $cordovaCamera.getPicture(options).then(function(imageUrl) {
-    $("#imgContent").show();
-    var link =  "data:image/jpeg;base64," +imageUrl;
+      $("#imgContent").show();
+     // var link =  "data:image/jpeg;base64," +imageUrl;
+      var link = imageUrl;
       $scope.imgURI.push(link);
-     console.log($scope.imgURI);
-  console.log($scope.imageLink);
-        }, function(err) {
+      console.log($scope.imgURI);
+      //console.log($scope.imageLink);
+  }, function(err) {
             // An error occured. Show a message to the user
-        });
+      });
 
 }
 
@@ -406,10 +559,11 @@ console.log(LocationService);
 
 
 
-    $scope.gpsButton = function(){
+    /*$scope.gpsButton = function(){
         
+        alert("gps");
           $state.go("app.gps");
-    }
+    }*/
 
 
 });
@@ -586,9 +740,10 @@ $scope.loadMore = function() {
 
       console.log(obsList);
       arrayData($scope,obsList["data"]["model"]["observationInstanceList"],2,BrowseService);
+      $scope.$broadcast('scroll.infiniteScrollComplete');
     } );
 
-    $scope.$broadcast('scroll.infiniteScrollComplete');
+   
     
   };
 
@@ -598,21 +753,7 @@ appne.controller('ListController',[ '$scope', '$http', 'BrowseService', function
   console.log("hi");
   $scope.details = [];
   $scope.innerDetails = [];
-  /*$http.get('js/data3.json').success(function(data){
-
-    //$scope.artists = data;
-    
-    $scope.innerDetails = data.observationInstanceList;
-    console.log(data.observationInstanceList);
-    arrayData($scope,data.observationInstanceList,1);
-    
-  });*/
-/*BrowseService.GetBrowseInfo().then(function(speciesGroup){
-
-  console.log(speciesGroup);
-} );*/
-
-//console.log(BrowseService.getGroupVal());
+  
 
 $scope.listParams = {
   offset:0,
@@ -627,6 +768,7 @@ BrowseService.GetBrowseList($scope.listParams).then(function(obsList){
 } );
 
   $scope.loadMore = function() {
+   // alert("hi");
     $scope.noMoreItemsAvailable = false;
 
     $scope.listParams.offset = $scope.listParams.offset + 24;
@@ -637,9 +779,10 @@ BrowseService.GetBrowseList($scope.listParams).then(function(obsList){
 
       console.log(obsList);
       arrayData($scope,obsList["data"]["model"]["observationInstanceList"],2,BrowseService);
+     $scope.$broadcast('scroll.infiniteScrollComplete');
     } );
 
-    $scope.$broadcast('scroll.infiniteScrollComplete');
+    //$scope.$broadcast('scroll.infiniteScrollComplete');
     /*$http.get('js/data.json').success(function(data) {
       //console.log(data.observationInstanceList);
       arrayData($scope,data.observationInstanceList,2);
@@ -676,25 +819,22 @@ $scope.listParams["lat"] = location["latitude"];
 
 
 BrowseService.GetBrowseList($scope.listParams).then(function(obsList){
-
   console.log("hel");
   arrayData($scope,obsList["data"]["model"]["observationInstanceList"],1,BrowseService);
 } );
 
   $scope.loadMore = function() {
-    $scope.noMoreItemsAvailable = false;
 
     $scope.listParams.offset = $scope.listParams.offset + 24;
     
-
-
     BrowseService.GetBrowseList($scope.listParams).then(function(obsList){
 
       console.log(obsList);
       arrayData($scope,obsList["data"]["model"]["observationInstanceList"],2,BrowseService);
+      $scope.$broadcast('scroll.infiniteScrollComplete');
     } );
 
-    $scope.$broadcast('scroll.infiniteScrollComplete');
+
     
   };
   
@@ -792,9 +932,7 @@ BrowseService.setObsList(observationInstanceList);
     }else{
       $scope.arr.push({"id":id,"iconUrl":iconUrl,"scientificName":sciName,"CommonName":commonname});
       
-    //$scope.noMoreItemsAvailable = true;
-    
-    
+    //
     
     }
   }
@@ -803,6 +941,7 @@ $scope.details = $scope.details.concat($scope.arr);
 //BrowseService.setObsList($scope.details);
  
 console.log($scope.details);
+$scope.noMoreItemsAvailable = false;
 
 }
 

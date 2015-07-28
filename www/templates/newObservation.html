@@ -13,29 +13,29 @@
   	</div>
 
 <br><br>
-     <button class="button button-positive listItem " ng-click="addMedia()" style="margin-left:45%;">Add photos</button>
+     <a class="button button-positive listItem " ng-click="addMedia()" style="margin-left:45%;">Add photos</a>
 <br>
 <br>
 
   	 <ion-list class="item-icon-right" >
   	 <div class="list" style="padding:10px;">
-         <ion-item class="listItem" >
+         <!--ion-item class="listItem" >
         <span >Select Category </span>
          <i class="icon ion-chevron-right "></i>
-         </ion-item>
-         <ion-item class="listItem item-input">
-        <span class="input-label">Date Sighted </span>
-        <input type="date">
+         </ion-item-->
+         <ion-item class="listItem item-input" id="dateSight">
+        <span class="input-label" >Date Sighted </span>
+        <input type="date" ng-model="newobs.date">
          <i class="icon ion-chevron-right "></i>
          </ion-item>
          <ion-item class="listItem">
-        <span id="Locationval">Location </span>
-        <button class="button button-small alignright" ng-click="gpsButton()">GPS</button>
+        <span id="Locationval" ng-model="newobs.location">Location</span>
+        <a href="#/app/gps" class="button button-small alignright" >GPS</a>
          </ion-item>
          </div>
          </ion-list>
 
-         <ion-checkbox style="margin:0px 10px 0px 10px;" id="check" class="listItem" >Help Identify</ion-checkbox>
+         <ion-checkbox style="margin:0px 10px 0px 10px;" id="check" ng-model="newobs.boxVal" class="listItem" >Help Identify</ion-checkbox>
 
          <br>
 
@@ -43,13 +43,13 @@
           <ion-list>
           <div class="list" style="padding:10px;">
           <ion-item class="listItem check1">
-          <input type="text" ng-model="newobs.sciName" placeholder="Scientific Name">
+          <input type="text" style="width:100%" ng-model="newobs.sciName" placeholder="Scientific Name">
           </ion-item>
           <ion-item class="listItem check1">
-          <input type="text" ng-model="newobs.commonName" placeholder="Common Name">
+          <input type="text" style="width:100%" ng-model="newobs.commonName" placeholder="Common Name">
           </ion-item>
           <ion-item class="listItem">
-          <input type="text" ng-model="newobs.notes" placeholder="Notes">
+          <input type="text" style="width:100%" ng-model="newobs.notes" placeholder="Notes">
           </ion-item>
           </div>
           </ion-list>
@@ -59,6 +59,7 @@
          <ion-item class="listItem" ng-click="userGroup();">
         <span >Select UserGroups </span>
          <i class="icon ion-chevron-right "></i>
+         <p class="alignright" id="uGroupText" style="margin-right:20px;"></p>
          </ion-item>
          </div>
          </ion-list>

@@ -13,7 +13,7 @@ appnService.factory('LoginService', function($http, ApiEndpoint){
                 //console.log(result);
                 //return result;
             }).error(function(d, status, headers, config) {
-                
+                console.log(status);
                 alert("Please checkyour username and password");
         });
 
@@ -91,6 +91,7 @@ appnService.factory('BrowseService', function($http,ApiEndpoint){
 			return items;
 		},
 		GetBrowseList: function(data){
+			console.log(data);
 			$(".modal").show();
 			return $http({
 					method : "GET",
@@ -129,8 +130,8 @@ appnService.factory('LocationService', function($q){
 	}
 
 	var userSelectLoc = {
-		latitude:"",
-		longitude:""
+		latitude:"11.93707847595214",
+		longitude:"79.83552551269528"
 	}
 
 

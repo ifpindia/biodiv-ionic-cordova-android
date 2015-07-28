@@ -16,7 +16,7 @@
     <ion-header-bar class="bar-stable">
       <h1 class="title">Menu</h1>
     </ion-header-bar>
-    <ion-content>
+    <ion-content ng-controller="LogoutController">
       <ion-list>
         
        
@@ -28,7 +28,7 @@
         <i class=" icon ion-ios-plus"></i>
           New observation
         </ion-item>
-        <ion-item menu-close href="#/app/obsrvationnearby" class="item item-icon-left">
+        <ion-item menu-close href="#/app/observationnearby" class="item item-icon-left">
         <i class=" icon ion-location"></i>
           Observations near me
         </ion-item>
@@ -44,7 +44,7 @@
           <i class=" icon ion-ios-list-outline"></i>
           Playlists-Submitted observation status
         </ion-item>
-        <ion-item menu-close href="#/app/login" class="item item-icon-left" >
+        <ion-item menu-close class="item item-icon-left" ng-click="logout()">
           <i class=" icon ion-power"></i>
           Logout
         </ion-item>
