@@ -1,0 +1,23 @@
+
+<ion-view view-title="Submitted observation status">
+  <ion-content >
+  <div id="obsStatusList" style="display:none;">
+         <ion-list class="item-icon-right">
+         <ion-item class="item-thumbnail-left" ng-repeat='item in details track by $index' href="#/app/statusDetails/{{item.id}}">
+         <img src="{{item.imgArr[0]}}" alt="{{item.sciName}} photo">
+         <h2>{{item.sciName}}</h2>
+         <p>{{item.status}}</p>
+         <i class="icon ion-chevron-right "></i>
+         </ion-item>
+         </ion-list>
+         
+        </div> 
+        <div id="obsStatusMsg" style="display:none;">
+        <p style="text-align: center;margin-top:50%">You dont have any observation submitted</p>
+        <a class="button button-block button-positive " style="border-radius: 7px;" href="#/app/newObservation" >
+          New Observation
+        </a>
+        </div>
+        </ion-content>
+</ion-view>
+
