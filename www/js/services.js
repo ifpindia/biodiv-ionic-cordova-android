@@ -1,6 +1,6 @@
 var appnService = angular.module('starter.services', [])
 
-appnService.factory('LoginService', function($http, ApiEndpoint){
+appnService.factory('LoginService', function($http, ApiEndpoint, $ionicPopup){
 
 	return {
      GetUserDetails : function(data){
@@ -14,7 +14,7 @@ appnService.factory('LoginService', function($http, ApiEndpoint){
                 //return result;
             }).error(function(d, status, headers, config) {
                 console.log(status);
-                alert("Please checkyour username and password");
+                showDailog($ionicPopup,"Please checkyour username and password");
         });
 
     },
@@ -35,6 +35,7 @@ appnService.factory('LoginService', function($http, ApiEndpoint){
             }).error(function(d, status, headers, config) {
                 
                 //alert("Please checkyour username and password");
+                showDailog($ionicPopup,"Unknown error, Please try again")
         });
     },
 
@@ -51,7 +52,7 @@ appnService.factory('LoginService', function($http, ApiEndpoint){
             }).error(function(d, status, headers, config) {
                 
                 console.log(d);
-                //alert("Please checkyour username and password");
+                showDailog($ionicPopup,"Unknown error, Please try again")
         });
     }
 
@@ -125,8 +126,8 @@ appnService.factory('BrowseService', function($http,ApiEndpoint){
 appnService.factory('LocationService', function($q){
 
 	var currentLocation = {
-		latitude:"",
-		longitude:""
+		latitude:"11.93707847595214",
+		longitude:"79.83552551269528"
 	}
 
 	var userSelectLoc = {
@@ -150,9 +151,9 @@ appnService.factory('LocationService', function($q){
 		return currentLocation;
 	},
 	SetUserSelectedLocation: function(data){
-		console.log(data.A);
-		userSelectLoc.latitude = data.A;
-		userSelectLoc.longitude = data.F;
+		//alert(data.G);
+		userSelectLoc.latitude = data.G;
+		userSelectLoc.longitude = data.K;
 		return null;
 	},
 	GetUserSelectedLocation: function(){
@@ -239,7 +240,87 @@ appnService.factory('UserGroupService', function($http,ApiEndpoint){
 
 });
 
+appnService.factory('NewObservationService', function($http,ApiEndpoint){
 
+	  var tokenvar = localStorage.getItem('USER_KEY');
+	  var tokenvar1 = JSON.parse(tokenvar);
+	  var token = tokenvar1.userKey;
+	  var userId = tokenvar1.userID;
+	  var id = tokenvar1.nId;
+	  var appkey = "a4fbb540-0385-4fff-b5da-590ddb9e2552";//"fc9a88b5-fac9-4f01-bc12-70e148f40a7f";
+	  var statusDetails = [];
+	 
+
+	  return {
+	  	SubmitObservation: function(paramsData){
+				return $http({
+					method : "POST",
+					url : ApiEndpoint.url + '/observation/save',
+					headers : {
+						"X-Auth-Token":token,
+						"X-AppKey":appkey
+					},
+					params : paramsData
+				}).success(function(data) {
+					console.log("Obs submitted!")
+				
+					 //console.log(data);
+					//return items;
+			    }).error(function(data, status, headers, config) {
+							console.log("submission error");
+							console.log("data"+data);
+							console.log("headers"+headers);
+							console.log("config"+config);
+							//SetStatus("FAILURE");
+			        		
+			    });
+		},
+		SetStatus: function(sName, cName, status, date, location, notes, imageArray){
+			
+			alert(id);
+			if(id==0){
+				id++;
+				statusDetails.push({"id":id, "sciName":sName, "commonName":cName, "status":status, "date":date, "location":location, "notes":notes, "imgArr":imageArray});
+				localStorage.setItem('StatusArray',JSON.stringify(statusDetails));
+				
+			} else{
+				id++;
+				alert("statusfun");
+				var getStatusVal = 	localStorage.getItem('StatusArray');
+				var parsed = JSON.parse(getStatusVal);
+				alert(parsed);
+
+				parsed.push({"id":id, "sciName":sName, "commonName":cName, "status":status, "date":date, "location":location, "notes":notes, "imgArr":imageArray});
+
+				//getStatusVal.push({"id":id, "sciName":sName, "commonName":cName, "status":status, "date":date, "location":location, "notes":notes, "imgArr":imageArray});
+
+				localStorage.setItem('StatusArray',JSON.stringify(parsed));
+
+			}
+			
+			tokenvar1.nId = id;
+			//statusDetails.push({"id":id, "sciName":sName, "commonName":cName, "status":status, "date":date, "location":location, "notes":notes, "imgArr":imageArray});
+			//localStorage.setItem('StatusArray',JSON.stringify(statusDetails));
+			
+			localStorage.setItem('USER_KEY',JSON.stringify(tokenvar1));
+			return null;
+		},
+		GetStatus: function(){
+			return statusDetails;
+		}
+	  };
+
+
+
+});
+
+ function showDailog($ionicPopup,message){
+
+      $ionicPopup.alert({
+          title: 'ERROR',
+          content: message//'You must submit atleast one image'
+        });
+    }
 
 /*appnService.factory('FileService', function() {
   var images;

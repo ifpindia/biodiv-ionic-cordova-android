@@ -36,7 +36,10 @@ appne.controller('AppCtrl', function($scope, $state,$ionicModal, $ionicSideMenuD
   
   // Perform the login action when the user submits the login form
   $scope.doLogin = function() {
-
+    var check =internetCheck($ionicPopup);
+    if(check == false){
+      return;
+    }
     /*var check = {"check1":"hi"}
     localStorage.setItem("checking",JSON.stringify(check));*/
     //console.log('Doing login', $scope.loginData);
@@ -45,7 +48,7 @@ appne.controller('AppCtrl', function($scope, $state,$ionicModal, $ionicSideMenuD
 
       console.log('Doing login', vals);
 
-      var uservar = {"userKey":vals["data"]['model']['token'],"userID":vals["data"]['model']['id']};
+      var uservar = {"userKey":vals["data"]['model']['token'],"userID":vals["data"]['model']['id'],"nId":0};
        localStorage.setItem('USER_KEY',JSON.stringify(uservar));
         $state.go("app.home");
       /*var laboo = localStorage.getItem('checking');
@@ -151,16 +154,65 @@ function validateEmail(email) {
 }
 
 
-appne.controller('LogoutController', function($scope,$state,$window) {
+appne.controller('LogoutController', function($scope,$state,$window,$ionicPopup) {
 
 //alert("hello");
    $scope.logout = function(){
         console.log("logout");
+        internetCheck($ionicPopup);
         localStorage.removeItem('USER_KEY');
+        localStorage.removeItem('StatusArray');
          $state.go("login");
          //$window.location.reload(true)
       } 
      
+});
+appne.controller('observationStatusController', function($scope, NewObservationService){
+
+  alert(localStorage.getItem('StatusArray'));
+
+  if(localStorage.getItem('StatusArray')== null){
+
+        $("div #obsStatusMsg").show();
+
+  }else {
+    //$route.reload();
+    alert("statuscntrl");
+      var status = localStorage.getItem('StatusArray');
+      var statusArray1 = JSON.parse(status);
+
+      console.log(statusArray1);
+      $scope.details = statusArray1;
+      
+      $("div #obsStatusList").show();
+
+  }
+});
+appne.controller('statusDetailsController', function($scope,$location) {
+  
+  console.log("statusDetailsController");
+
+    $scope.singleObsDetails = [];
+    $scope.singleImgDetails = [];
+      var obsId = $location.path().split("/")[3];
+      alert(obsId);
+      var status = localStorage.getItem('StatusArray');
+      var statusArray1 = JSON.parse(status);
+
+      for(var i=0; i<Object.keys(statusArray1).length;i++){
+        if(statusArray1[i]['id'] == obsId){
+          $scope.singleObsDetails.push({"id":statusArray1[i]['id'],"scientificName":statusArray1[i]['sciName'],"CommonName":statusArray1[i]['commonName'],"observed":statusArray1[i]['date'],"updated":statusArray1[i]['date'],"submitted":statusArray1[i]['date'],"author":'',"place":statusArray1[i]['location'], "imgDetails":statusArray1[i]['imgArr'], "notes":statusArray1[i]['notes']});
+          $scope.singleImgDetails.push([{"image":{"icon":statusArray1[i]['imgArr']}}])
+        }
+      }
+
+
+//console.log(typeof(newUrl.split("/")[3]));
+//console.log(obsId);
+
+
+  
+    //console.log(imgDetails);
 })
 appne.controller('BrowseDetailsCtrl', function($scope,$location,BrowseService) {
   
@@ -257,7 +309,7 @@ function browsingArray($scope,obsDetails,obsId){
 
 
 
-appne.controller('NewObservationCtrl', function($scope,$state,$http,$cordovaCamera,LocationService,$ionicPopup,$cordovaDevice, $cordovaFile, $ionicPlatform,  $ionicActionSheet, $filter, $cordovaFileTransfer, ApiEndpoint, UserGroupService) {
+appne.controller('NewObservationCtrl', function($scope,$state,$http,$cordovaCamera,LocationService,$ionicPopup,$cordovaDevice, $cordovaFile, $ionicPlatform,  $ionicActionSheet, $filter, $cordovaFileTransfer, ApiEndpoint, UserGroupService, NewObservationService) {
     
     //alert("hello");
     $scope.newobs ={
@@ -266,6 +318,7 @@ appne.controller('NewObservationCtrl', function($scope,$state,$http,$cordovaCame
       notes : '',
       boxVal : false
     };
+    $scope.submitObsParams = {};
     $scope.imgURI =[];
     $(function () {
       $('#check').change(function () {
@@ -282,7 +335,7 @@ appne.controller('NewObservationCtrl', function($scope,$state,$http,$cordovaCame
         //console.log(currentDate);
         if(Date.parse($scope.date) > Date.parse(currentDate)){
            showDailog("Please slect a valid date");
-           //return;
+           return;
         }else {
           $scope.newobs.date = $filter('date')( $scope.newobs.date,"dd/MM/yyyy" );
         }
@@ -328,7 +381,8 @@ appne.controller('NewObservationCtrl', function($scope,$state,$http,$cordovaCame
         }
       }
       console.log($('#Locationval').text());
-      if($('#Locationval').text() == 'Location'){
+      $scope.locationAddress = $('#Locationval').text();
+      if($scope.locationAddress == 'Location'){
         var confirmPopup = $ionicPopup.confirm({
            title: 'Location',
            template: 'you didnt entered Location. Default location will be taken'
@@ -337,6 +391,8 @@ appne.controller('NewObservationCtrl', function($scope,$state,$http,$cordovaCame
            if(res) {
             $scope.locationAddress = "Lally Tollendal Street, White Town, Puducherry, Puducherry 605002, India"; 
             $('#Locationval').text($scope.locationAddress);
+            var loc = {'G':11.93707847595214 , 'K':79.83552551269528}
+            LocationService.SetUserSelectedLocation(loc);
             executeRequest();
            } else {
              console.log('You are not sure');
@@ -355,11 +411,14 @@ appne.controller('NewObservationCtrl', function($scope,$state,$http,$cordovaCame
       var tokenvar = localStorage.getItem('USER_KEY');
       var tokenvar1 = JSON.parse(tokenvar);
       var token = tokenvar1.userKey;
-      var appkey = "fc9a88b5-fac9-4f01-bc12-70e148f40a7f";
-      var imageLink = $scope.imgURI[0] ;
+      var appkey = "a4fbb540-0385-4fff-b5da-590ddb9e2552";//"fc9a88b5-fac9-4f01-bc12-70e148f40a7f";
+      $scope.count =0;
+      $scope.newImageStr = [];
       console.log($scope.newobs);
-       var options = {
+       var options = new FileUploadOptions();
+       /*{
             fileKey: "resources",
+            fileName: imageLink.substr(imageLink.lastIndexOf('/')+1),
             chunkedMode: false,
             mimeType: "image/*",
             httpMethod:"POST",
@@ -367,9 +426,158 @@ appne.controller('NewObservationCtrl', function($scope,$state,$http,$cordovaCame
             "X-Auth-Token":token,
             "X-AppKey":appkey
           }
-        };
 
-       $cordovaFileTransfer.upload(ApiEndpoint.url+"/observation/upload_resource?resType=species.participation.Observation", imageLink, options).then(function(result) {
+        };*/
+        for(var i = 0;i < $scope.imgURI.length; i++){
+          var imageLink = $scope.imgURI[i] ;
+            options.fileKey = "resources",
+            options.fileName = imageLink.substr(imageLink.lastIndexOf('/')+1),
+            options.chunkedMode = false,
+            options.mimeType = "image/jpg",
+            options.httpMethod = "POST",
+            options.headers =  {
+            "X-Auth-Token":token,
+            "X-AppKey":appkey
+          }
+
+          var ft = new FileTransfer();
+          var uri = encodeURI(ApiEndpoint.url+"/observation/upload_resource?resType=species.participation.Observation");
+          
+          //alert("file");
+          ft.upload(imageLink, uri, win, fail, options);
+        }
+
+      }
+
+          function win(data){
+            //alert(response);
+            //alert(JSON.stringify(response));
+            //var val = JSON.stringify(response);
+            //alert(data.response);
+            //alert(data.response[0]);
+            //console.log(data.response);
+            var parsedData = JSON.parse(data.response);
+            //alert(dat["model"]["observations"]["resources"]);
+            //alert(parsedData["model"]);
+            //alert(val.response["model"]["observations"]["resources"])
+             //alert(jArray);
+             
+
+             var jArray = [];
+             jArray = parsedData["model"]["observations"]["resources"];
+             //alert(jArray[0]);
+
+             if(jArray!=null && jArray.length>0){
+                for(var i=0; i<jArray.length; i++){
+
+                  $scope.newImageStr.push(jArray[i]["fileName"]);
+
+                }
+              $scope.count++;
+             }
+
+             //alert($scope.count);
+
+             if($scope.count == $scope.imgURI.length){
+              alert("parse");
+              console.log("win parsing "+ $scope.count +" called parse resource");
+              console.log(Object.keys($scope.newImageStr).length);
+              parseResourceDetails();
+             }
+          }
+          function fail(err){
+            alert(err);
+            statusCheck();
+            console.log("error:fail " + JSON.stringify(err));
+          }
+          
+
+          function parseResourceDetails(){
+            var count1 = 0;
+            console.log("newImgstr" + Object.keys($scope.newImageStr).length);
+            alert(Object.keys($scope.newImageStr).length);
+            for(var i=0; i<Object.keys($scope.newImageStr).length; i++){
+              //alert()
+              count1++;
+              $scope.submitObsParams["file_"+(i+1)] = $scope.newImageStr[i];
+              $scope.submitObsParams["type_"+(i+1)] = "IMAGE";
+              $scope.submitObsParams["license_"+(i+1)] = "CC_BY";
+              
+              if(count1 == Object.keys($scope.newImageStr).length){
+                alert("entered");
+                submitObservationFinally();
+              }
+            }
+            //console.log($scope.submitObsParams);
+            
+          }
+
+          function statusCheck(){
+            var sciName;
+            var commonName;
+            var obsNotes;
+            if($scope.newobs['sciName'].length>0){
+               sciName = $scope.newobs['sciName'];
+            } else {
+              sciName = "Unkown";
+            }
+            if($scope.newobs['commonName'].length>0){
+               commonName = $scope.newobs['commonName'];
+            } else {
+              commonName = "";
+            }
+            if($scope.newobs['notes'].length>0){
+               obsNotes = $scope.newobs['notes'];
+            } else {
+              obsNotes = "";
+            }
+
+
+            NewObservationService.SetStatus(sciName, commonName, "FAILURE", $scope.newobs.date, $scope.locationAddress, obsNotes, $scope.imgURI);
+             
+          }
+
+          function submitObservationFinally(){
+            var sciName1, commonName1;
+            var uLatLong = LocationService.GetUserSelectedLocation();
+            console.log("SUBMIT USER"+uLatLong.latitude+" SUBMI "+uLatLong.longitude)
+            $scope.submitObsParams['group_id'] =  829;//9;
+            $scope.submitObsParams['habitat_id'] = 267835; //1;
+            $scope.submitObsParams['fromDate'] = $scope.newobs.date;
+            $scope.submitObsParams['placeName'] = $scope.locationAddress;
+            $scope.submitObsParams['areas'] =  "POINT("+uLatLong.longitude+" "+uLatLong.latitude+")"
+            $scope.submitObsParams['notes'] = $scope.newobs.notes;
+          
+            if($scope.newobs['sciName'].length>0){
+              $scope.submitObsParams['recoName'] = $scope.newobs['sciName'];
+            }
+            if($scope.newobs['commonName'].length>0){
+              $scope.submitObsParams['commonName'] = $scope.newobs['commonName'];
+            }
+            $scope.submitObsParams['resourceListType'] = "ofObv" ;
+            $scope.submitObsParams['agreeTerms'] = "on";
+            if($scope.userGroupId !=null && $scope.userGroupId.length>0) {
+              $scope.submitObsParams['userGroupsList'] = $scope.userGroupId
+            }
+            console.log($scope.submitObsParams);
+            NewObservationService.SubmitObservation($scope.submitObsParams).then(function(obsResponse){
+              
+              alert("success" + obsResponse.data.success);
+              if(obsResponse.data.success == false){
+
+               statusCheck();
+              }
+              console.log(obsResponse);
+            },
+            function(err){
+              alert("Nosuccess");
+              console.log(err);
+               statusCheck();
+            });
+
+          }
+
+       /*$cordovaFileTransfer.upload(ApiEndpoint.url+"/observation/upload_resource?resType=species.participation.Observation", imageLink, options).then(function(result) {
             console.log("SUCCESS: " + result);
             console.log(result.status);
             consoe.log(result.observations.fileName)
@@ -378,13 +586,13 @@ appne.controller('NewObservationCtrl', function($scope,$state,$http,$cordovaCame
             console.log("ERROR: " + JSON.stringify(err));
         }, function (progress) {
             // constant progress updates
-        });
+        });*/
 
-    }
+    //}
     function showDailog(message){
 
       $ionicPopup.alert({
-          title: 'alert',
+          title: 'ERROR',
           content: message//'You must submit atleast one image'
         });
     }
@@ -451,37 +659,12 @@ appne.controller('NewObservationCtrl', function($scope,$state,$http,$cordovaCame
       console.log($scope.userGroupId);
     }
 
-    /*$scope.image = [];
-    $scope.browse = function(){
-
-      var listPopup = $ionicPopup.show({
-     template: '<ion-list>                                '+
-               '  <ion-item ng-click="camera();" class="listItem check1"> '+
-               '    Take a Picture                              '+
-               '  </ion-item>                             '+
-               '  <ion-item ng-click="camera();" class="listItem check1"> '+
-               '    Choose from Gallery                              '+
-               '  </ion-item>                             '+
-               '</ion-list>                               ',
-     
-     title: 'Choose Option',
-     scope: $scope,
-     buttons: [
-       { text: 'Cancel' },
-     ]
-   });   
-
-
-
-    }
-
-
-    }*/
-
-   
-  
- 
   $scope.addMedia = function() {
+
+    if($scope.imgURI.length == 5){
+      showDailog("Maximum Images reached");
+      return;
+    }
     $scope.hideSheet = $ionicActionSheet.show({
       buttons: [
         { text: 'Take photo' },
@@ -543,56 +726,22 @@ var options = {
 
 }
 
-
-console.log(LocationService);
-   var data = LocationService.getCurrentLocation()//.then(function(data){
+var data = LocationService.getCurrentLocation()//.then(function(data){
     console.log(data);
       var code="https://maps.googleapis.com/maps/api/geocode/json?latlng="+data.latitude+","+data.longitude;
-      
+      var loc = {'G':data.latitude , 'K':data.longitude};
+            LocationService.SetUserSelectedLocation(loc);
       $http.get(code).success(function(dataval){
             //console.log(dataval.results[0]);
-            $("#Locationval").text(dataval.results[0]["formatted_address"])
+            $("#Locationval").text(dataval.results[0]["formatted_address"]);
+
           });
-    //});
- //});
-
-
-
-
-    /*$scope.gpsButton = function(){
-        
-        alert("gps");
-          $state.go("app.gps");
-    }*/
-
+   
 
 });
 
 
-function optionsForType(type){
 
-  var source;
-    var val;
-    console.log("type"+type)
-    switch (type) {
-      case 0:
-        source = Camera.PictureSourceType.CAMERA;
-        val = true;
-        break;
-      case 1:
-        source = Camera.PictureSourceType.PHOTOLIBRARY;
-        val = false;
-        break;
-    }
-    return {
-      destinationType: Camera.DestinationType.FILE_URI,
-      sourceType: source,
-      allowEdit: false,
-      encodingType: Camera.EncodingType.JPEG,
-      popoverOptions: CameraPopoverOptions,
-      saveToPhotoAlbum: val
-    };
-}
 
 appne.controller('newobs2', function($scope, $state, LocationService) {
 
@@ -700,12 +849,12 @@ UserGroupService.GetJoinedGroups().then(function(groups){
 
 }]);
 
-appne.controller('MyCollectionCtrl',[ '$scope', '$http', 'BrowseService','LocationService', function($scope,$http,BrowseService,LocationService){
+appne.controller('MyCollectionCtrl',[ '$scope', '$http', 'BrowseService','LocationService', '$ionicPopup', function($scope,$http,BrowseService,LocationService,$ionicPopup){
 
 //console.log($("#myCollectionMsg").html());
 
 
-
+internetCheck($ionicPopup);
 $scope.details = [];
   $scope.innerDetails = [];
 
@@ -749,7 +898,8 @@ $scope.loadMore = function() {
 
 }]);
 
-appne.controller('ListController',[ '$scope', '$http', 'BrowseService', function($scope,$http,BrowseService){
+appne.controller('ListController',[ '$scope', '$http', 'BrowseService', '$ionicPopup', function($scope,$http,BrowseService,$ionicPopup){
+  internetCheck($ionicPopup);
   console.log("hi");
   $scope.details = [];
   $scope.innerDetails = [];
@@ -798,8 +948,9 @@ BrowseService.GetBrowseList($scope.listParams).then(function(obsList){
  
 }]);
 
-appne.controller('ObsNearByCtrl', [ '$scope', '$http', 'BrowseService','LocationService', function($scope,$http,BrowseService,LocationService){
+appne.controller('ObsNearByCtrl', [ '$scope', '$http', 'BrowseService','LocationService', '$ionicPopup',function($scope,$http,BrowseService,LocationService,$ionicPopup){
 
+internetCheck($ionicPopup);
  $scope.details = [];
   $scope.innerDetails = [];
 
@@ -841,10 +992,10 @@ BrowseService.GetBrowseList($scope.listParams).then(function(obsList){
 }]);
 
 
-appne.controller('JoinGroupCtrl',[ '$scope', '$http','$compile','UserGroupService', function($scope,$http,$compile,UserGroupService){
+appne.controller('JoinGroupCtrl',[ '$scope', '$http','$compile','UserGroupService', '$ionicPopup', function($scope,$http,$compile,UserGroupService,$ionicPopup){
   console.log("jgroup");
 
-
+internetCheck($ionicPopup);
   /*$http.get('js/userGroup.json').success(function(data){
     //$scope.artists = data;
     //console.log($scope.artists.observationInstanceList );
@@ -984,6 +1135,20 @@ function checkGroup($scope,joinedgroup){
   
 }
 
+function internetCheck($ionicPopup){
+  console.log(window.Connection);
+  if(window.Connection) {
+    //alert("connection");
+    if(navigator.connection.type == Connection.NONE) {
+      //alert("no connection");
+        $ionicPopup.alert({
+            title: 'ERROR',
+            content: "Plase make sure, you are connected to internet"//'You must submit atleast one image'
+          });
+      return false;
+    }
+  }
+}
 
 
 
