@@ -1,0 +1,31 @@
+<ion-view title={{singleObsDetails[0].scientificName}}>
+ <ion-nav-bar class="bar-positive">
+      <ion-nav-back-button >
+      </ion-nav-back-button>
+      </ion-nav-bar>
+  <ion-content  class="padding" >
+        
+
+  		<h2 style="padding:10px">{{singleObsDetails[0].scientificName}}</h2>
+  		<h3 style="padding:10px">{{singleObsDetails[0].CommonName}}</h3>
+
+       
+       <ion-scroll direction="x" class="wide-as-needed padding" >
+         <img ng-repeat='item in singleImgDetails[0]["image"]' src="{{item.path}}" style="padding:2px;height:25%;width:25%;" /> 
+    
+      </ion-scroll>
+
+      <br>
+      <h4><b>Place:</b></h4>
+      <p>{{singleObsDetails[0].place}}</p>
+      <h4><b>Observed on:</b></h4>
+      <p>{{singleObsDetails[0].observed}}</p>
+      <h4><b>Submitted:</b></h4>
+      <p>{{singleObsDetails[0].submitted}}</p>
+      <h4><b>Updated:</b></h4>
+      <p>{{singleObsDetails[0].updated}}</p>
+      <h4 ng-if="!visible">Notes:</h4>
+      {{singleObsDetails[0].notes}}
+         
+  </ion-content> 
+</ion-view>

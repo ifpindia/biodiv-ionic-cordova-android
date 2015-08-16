@@ -1,0 +1,84 @@
+<ion-view view-title="Edit Observation">
+<ion-nav-buttons side="left">
+        <button class="button button-icon  ion-navicon" menu-toggle="left">
+        </button>
+      </ion-nav-buttons>
+  <ion-content ng-controller="newobs2">
+  <form ng-submit="submitNewObs()">
+  
+  <div ng-if="imgURI.length > 0" style="padding:10px;" id="imgContent">
+
+  <ion-scroll direction="x" style="height:200px; min-height: 200px; overflow: scroll; white-space: nowrap;">
+  <div class="img-wrap"  ng-repeat="images in imgURI" id="{{images.id}}">
+  <span class="close" ng-click="removeImage({{images.id}})">&times;</span>
+      <img  ng-src="{{images.path}}" style="height:200px;width:150px; padding: 5px 5px 5px 5px;"/>
+      </div>
+    </ion-scroll>
+    
+
+    
+  	</div>
+
+<br><br>
+     <a class="button button-positive listItem " ng-click="addMedia()" style="margin-left:45%;">Add photos</a>
+<br>
+<br>
+
+  	 <ion-list class="item-icon-right" >
+  	 <div class="list" style="padding:10px;">
+         <!--ion-item class="listItem" >
+        <span >Select Category </span>
+         <i class="icon ion-chevron-right "></i>
+         </ion-item-->
+         <ion-item class="listItem item-input" id="dateSight">
+        <span class="input-label" >Date Sighted </span>
+        <input type="date" ng-model="newobs.date">
+         <i class="icon ion-chevron-right "></i>
+         </ion-item>
+         <ion-item class="listItem">
+        <input type="text" id="Locationval" ng-model="newobs.location" style="width:100%;"></input>
+        <a ng-click="gps()" class="button button-small alignright" >GPS</a>
+         </ion-item>
+         </div>
+         </ion-list>
+
+         <ion-checkbox style="margin:0px 10px 0px 10px;" id="check" ng-model="newobs.boxVal" class="listItem" >Help Identify</ion-checkbox>
+
+         <br>
+
+
+          <ion-list>
+          <div class="list" style="padding:10px;">
+          <ion-item class="listItem check1">
+          <input type="text" style="width:100%" ng-model="newobs.sciName" placeholder="Scientific Name">
+          </ion-item>
+          <ion-item class="listItem check1">
+          <input type="text" style="width:100%" ng-model="newobs.commonName" placeholder="Common Name">
+          </ion-item>
+          <ion-item class="listItem">
+          <input type="text" style="width:100%" ng-model="newobs.notes" placeholder="Notes">
+          </ion-item>
+          </div>
+          </ion-list>
+
+           <ion-list class="item-icon-right" >
+  	 <div class="list" style="padding:10px;">
+         <ion-item class="listItem" ng-click="userGroup();">
+        <span >Select UserGroups </span>
+         <i class="icon ion-chevron-right "></i>
+         <p class="alignright" id="uGroupText" style="margin-right:20px;"></p>
+         </ion-item>
+         </div>
+         </ion-list>
+
+         <button ng-if="submitObsVal" class="button button-full button-positive" type="submit" style="border-radius: 7px;">Submit</button>
+         <br>
+         <div style="text-align: center;">
+          <button ng-if="!submitObsVal" class="button  button-positive" type="submit" style="border-radius: 7px;width:40%;">Submit Edit</button>
+
+          <button ng-if="!submitObsVal" class="button  button-positive" ng-click="deleteObs()" style="border-radius: 7px;width:40%;margin-left: 8px;">Delete</button>
+        </div>
+   </form>
+
+  </ion-content>
+</ion-view>
