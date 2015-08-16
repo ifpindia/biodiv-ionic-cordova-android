@@ -4,7 +4,7 @@
   <div id="obsStatusList" style="display:none;">
          <ion-list class="item-icon-right">
          <ion-item class="item-thumbnail-left" ng-repeat='item in details track by $index' href="#/app/statusDetails/{{item.id}}">
-         <img src="{{item.imgArr[0]}}" alt="{{item.sciName}} photo">
+         <img src="{{item.imgArr[0]['path']}}" alt="{{item.sciName}} photo">
          <h2>{{item.sciName}}</h2>
          <p>{{item.status}}</p>
          <i class="icon ion-chevron-right "></i>

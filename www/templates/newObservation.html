@@ -1,11 +1,18 @@
 <ion-view view-title="New Observation">
+<ion-nav-buttons side="left">
+        <button class="button button-icon  ion-navicon" menu-toggle="left">
+        </button>
+      </ion-nav-buttons>
   <ion-content ng-controller="newobs2">
   <form ng-submit="submitNewObs()">
   
   <div style="padding:10px;display:none" id="imgContent">
 
   <ion-scroll direction="x" style="height:200px; min-height: 200px; overflow: scroll; white-space: nowrap;">
-      <img ng-repeat="images in imgURI" ng-show="imgURI !== undefined"  ng-src="{{images}}" style="height:200px;width:150px; padding: 5px 5px 5px 5px;"/>
+  <div class="img-wrap"  ng-repeat="images in imgURI" id="{{images.id}}">
+  <span class="close" ng-click="removeImage({{images.id}})">&times;</span>
+      <img  ng-show="imgURI !== undefined"  ng-src="{{images.path}}" style="height:200px;width:150px; padding: 5px 5px 5px 5px;"/>
+      </div>
     </ion-scroll>
     
 
@@ -30,7 +37,7 @@
          </ion-item>
          <ion-item class="listItem">
         <span id="Locationval" ng-model="newobs.location">Location</span>
-        <a href="#/app/gps" class="button button-small alignright" >GPS</a>
+        <a ng-click="gps()" class="button button-small alignright" >GPS</a>
          </ion-item>
          </div>
          </ion-list>
@@ -64,8 +71,13 @@
          </div>
          </ion-list>
 
-         <button class="button button-full button-positive" type="submit" style="border-radius: 7px;">Submit</button>
+         <button ng-if="submitObsVal" class="button button-full button-positive" type="submit" style="border-radius: 7px;">Submit</button>
+         <br>
+         <div style="text-align: center;">
+          <button ng-if="!submitObsVal" class="button  button-positive" type="submit" style="border-radius: 7px;width:40%;">Submit Edit</button>
 
+          <button ng-if="!submitObsVal" class="button  button-positive" ng-click="deleteObs()" style="border-radius: 7px;width:40%;margin-left: 8px;">Delete</button>
+        </div>
    </form>
 
   </ion-content>

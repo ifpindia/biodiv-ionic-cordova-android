@@ -1,4 +1,16 @@
 <ion-view title={{singleObsDetails[0].scientificName}}>
+  <ion-nav-buttons side="right">
+    <div  ng-if="vedio">
+   <a class="button button-clear" href="#/app/editDetails/{{singleObsDetails[0].id}}" ng-click="editButton()">
+              Edit
+       </a>
+    </div>
+  </ion-nav-buttons>
+  
+      <ion-nav-bar class="bar-positive">
+      <ion-nav-back-button >
+      </ion-nav-back-button>
+      </ion-nav-bar>
   <ion-content  class="padding" >
         
 

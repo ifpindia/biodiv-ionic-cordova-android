@@ -8,10 +8,11 @@ angular.module('starter', ['ionic', 'ngCordova', 'starter.controllers','starter.
     //url: 'http://localhost:8100/api'
     url:'http://portal.wikwio.org/api'
     //url:'http://pamba.strandls.com/api'
+    //url:'http://indiabiodiversity.org/api'
 })
 
 
-.run(function($ionicPlatform) {
+.run(function($ionicPlatform, $cordovaSQLite) {
   $ionicPlatform.ready(function() {
     // Hide the accessory bar by default (remove this to show the accessory bar above the keyboard
     // for form inputs)
@@ -22,6 +23,8 @@ angular.module('starter', ['ionic', 'ngCordova', 'starter.controllers','starter.
       // org.apache.cordova.statusbar required
       StatusBar.styleDefault();
     }
+     db = $cordovaSQLite.openDB("observationQueue.db");
+     $cordovaSQLite.execute(db, "CREATE TABLE IF NOT EXISTS observation (id integer primary key, status text, obslist text)");
   });
 })
 
@@ -43,6 +46,7 @@ angular.module('starter', ['ionic', 'ngCordova', 'starter.controllers','starter.
   })
 
   .state('newUser', {
+    cache:false,
     url: "/newUser",
     //views: {
       //'menuContent':{
@@ -53,6 +57,7 @@ angular.module('starter', ['ionic', 'ngCordova', 'starter.controllers','starter.
   })
 
   .state('app', {
+    cache:false,
     url: "/app",
     abstract: true,
     templateUrl: "templates/menu.html",
@@ -61,6 +66,7 @@ angular.module('starter', ['ionic', 'ngCordova', 'starter.controllers','starter.
   })
 
   .state('app.home', {
+    cache:false,
     url: "/home",
     views: {
       'menuContent': {
@@ -70,15 +76,16 @@ angular.module('starter', ['ionic', 'ngCordova', 'starter.controllers','starter.
     }
   })
 
-  /*.state('app.login', {
-    url: "/login",
+  .state('app.viewMap', {
+    cache:false,
+    url: "/viewMap",
     views: {
-      'login':{
-        templateUrl: "templates/login.html",
-        
+      'menuContent':{
+        templateUrl: "templates/viewMap.html",
+        controller:  'ViewOnMapController'
      }
     }
-  })*/
+  })
 
   /*.state('app.forgotpassword', {
       url: '/forgot-password',
@@ -90,6 +97,7 @@ angular.module('starter', ['ionic', 'ngCordova', 'starter.controllers','starter.
 
 
   .state('app.newObservation', {
+    //cache:false,
     url: "/newObservation",
     views: {
       'menuContent': {
@@ -100,10 +108,22 @@ angular.module('starter', ['ionic', 'ngCordova', 'starter.controllers','starter.
   })
 
   .state('app.gps', {
+    //cache:false,
     url: "/gps",
     views: {
       'menuContent': {
-        templateUrl: "templates/GPS.html",
+        templateUrl: "templates/gps.html",
+        controller: 'GPSController'
+      }
+    }
+  })
+
+  .state('app.location', {
+    cache:false,
+    url: "/location",
+    views: {
+      'menuContent': {
+        templateUrl: "templates/location.html",
         controller: 'GPSController'
       }
     }
@@ -112,6 +132,7 @@ angular.module('starter', ['ionic', 'ngCordova', 'starter.controllers','starter.
 
 
   .state('app.joinedGroups', {
+    cache:false,
       url: "/joinedGroups",
       views: {
         'menuContent': {
@@ -122,6 +143,7 @@ angular.module('starter', ['ionic', 'ngCordova', 'starter.controllers','starter.
     })
 
     .state('app.browsedetails', {
+      cache:false,
       url: "/browsedetails/:browseId",
       views: {
         'menuContent': {
@@ -132,6 +154,7 @@ angular.module('starter', ['ionic', 'ngCordova', 'starter.controllers','starter.
     })
 
     .state('app.browse', {
+      //cache:false,
       url: "/browse",
       views: {
         'menuContent': {
@@ -142,6 +165,7 @@ angular.module('starter', ['ionic', 'ngCordova', 'starter.controllers','starter.
     })
 
     .state('app.observationnearby', {
+      //cache:false,
       url: "/observationnearby",
       views: {
         'menuContent': {
@@ -152,6 +176,7 @@ angular.module('starter', ['ionic', 'ngCordova', 'starter.controllers','starter.
     })
 
     .state('app.mycollection', {
+      cache:false,
       url: "/mycollection",
       views: {
         'menuContent': {
@@ -162,11 +187,24 @@ angular.module('starter', ['ionic', 'ngCordova', 'starter.controllers','starter.
     })
 
     .state('app.statusDetails', {
+      cache:false,
       url: "/statusDetails/:browseId",
       views: {
         'menuContent': {
-          templateUrl: "templates/browsedetails.html",
+          templateUrl: "templates/statusDetails.html",
           controller: 'statusDetailsController'
+        }
+      }
+    })
+
+    .state('app.editDetails', {
+      cache:false,
+      url: "/editDetails/:browseId",
+      views: {
+        'menuContent': {
+          
+          templateUrl: "templates/editObservation.html",
+          controller: 'EditObservationCtrl'
         }
       }
     })

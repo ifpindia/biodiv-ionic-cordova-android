@@ -1,4 +1,9 @@
 <ion-view view-title="Observations">
+<ion-nav-buttons side="left">
+        <button class="button button-icon  ion-navicon" menu-toggle="left">
+        </button>
+      </ion-nav-buttons>
+      
   <ion-content  >
   <div class="modal"></div>
          <ion-list class="item-icon-right">
@@ -8,10 +13,16 @@
          <p>{{item.CommonName}}</p>
          <i class="icon ion-chevron-right "></i>
          </ion-item>
+
          </ion-list>
          <ion-infinite-scroll
             on-infinite="loadMore()"
             distance="1%">
           </ion-infinite-scroll>
+         
         </ion-content> 
+         <ion-footer-bar class="bar-positive" style="border-radius: 10px;">
+      <div class="title" ng-click="enableMap()">View on Map</div>
+    </ion-footer-bar>
+        
 </ion-view>

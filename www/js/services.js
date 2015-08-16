@@ -54,11 +54,48 @@ appnService.factory('LoginService', function($http, ApiEndpoint, $ionicPopup){
                 console.log(d);
                 showDailog($ionicPopup,"Unknown error, Please try again")
         });
-    }
+    },
+    GoogleUserlogin : function(token){
+    	//alert(token);
+    	return $http({
+                method: "GET",
+                url : ApiEndpoint.url + '/oauth/callback/google',
+                params : {"access_token":token},
+            }).success(function(response) {
+            	//alert("came");
+                console.log(response)
+                //alert(JSON.stringify(response));
+                //return result;
+            }).error(function(d, status, headers, config) {
+                $(".modal").hide();
+                //alert("Please checkyour username and password");
+                console.log(config)
+                alert("Unknown error");
+        });
+     },
 
-    /*return {
-        'RegisterUser':RegisterUser
-    };*/
+      FacebookUserlogin : function(tokenVal){
+    	alert(tokenVal);
+    	return $http({
+                method: "GET",
+                url : ApiEndpoint.url + '/oauth/callback/facebook',
+                params : {"access_token":tokenVal},
+            }).success(function(response) {
+            	alert("came");
+                console.log(response)
+                //alert(JSON.stringify(response));
+                //return result;
+            }).error(function(d, status, headers, config) {
+                $(".modal").hide();
+                //alert("Please checkyour username and password");
+                console.log(config);
+                console.log("console  "+JSON.stringify(d));
+                alert("Unknown error");
+        });
+     }
+	
+
+    
 	};
 });
 
@@ -69,6 +106,7 @@ appnService.factory('BrowseService', function($http,ApiEndpoint){
 	var tokenvar = localStorage.getItem('USER_KEY');
       var tokenvar1 = JSON.parse(tokenvar);
       var token = tokenvar1.userKey;
+      var justCount = 0;
 	return {
 		GetBrowseInfo: function(){
 				return $http({
@@ -92,8 +130,10 @@ appnService.factory('BrowseService', function($http,ApiEndpoint){
 			return items;
 		},
 		GetBrowseList: function(data){
+			//justCount++;
 			console.log(data);
-			$(".modal").show();
+			//if(justCount)
+			
 			return $http({
 					method : "GET",
 					url : ApiEndpoint.url + '/observation/list',
@@ -135,6 +175,8 @@ appnService.factory('LocationService', function($q){
 		longitude:"79.83552551269528"
 	}
 
+	var detailedAdd = '';
+
 
 	return {
 		GetLocation : function(){
@@ -158,6 +200,12 @@ appnService.factory('LocationService', function($q){
 	},
 	GetUserSelectedLocation: function(){
 		return userSelectLoc;
+	},
+	SetUserSelectedLocAdd: function(address){
+		detailedAdd = address;
+	},
+	GetUserSelectedLocAdd: function(){
+		return detailedAdd ;
 	}
 	};
 
@@ -172,6 +220,7 @@ appnService.factory('UserGroupService', function($http,ApiEndpoint){
       var token = tokenvar1.userKey;
       //alert(token);
       var userId = tokenvar1.userID;
+      var appkey = "a4fbb540-0385-4fff-b5da-590ddb9e2552";
       //alert(userId);
       var userGroups;
 
@@ -215,7 +264,10 @@ appnService.factory('UserGroupService', function($http,ApiEndpoint){
 			return $http({
 					method : "GET",
 					url : ApiEndpoint.url + '/group/'+ id +'/joinUs',
-					headers : {"X-Auth-Token":token}
+					headers : {
+						"X-Auth-Token":token,
+						"X-AppKey":appkey
+					}
 					//params : {"id":id}
 				}).success(function(data) {
 					console.log("joining success!")
@@ -249,6 +301,7 @@ appnService.factory('NewObservationService', function($http,ApiEndpoint){
 	  var id = tokenvar1.nId;
 	  var appkey = "a4fbb540-0385-4fff-b5da-590ddb9e2552";//"fc9a88b5-fac9-4f01-bc12-70e148f40a7f";
 	  var statusDetails = [];
+	  var obsDetailVals = [];
 	 
 
 	  return {
@@ -275,14 +328,14 @@ appnService.factory('NewObservationService', function($http,ApiEndpoint){
 			        		
 			    });
 		},
-		SetStatus: function(sName, cName, status, date, location, notes, imageArray){
+		/*SetStatus: function(sName, cName, status, date, location, notes, imageArray){
 			
 			alert(id);
 			if(id==0){
 				id++;
 				statusDetails.push({"id":id, "sciName":sName, "commonName":cName, "status":status, "date":date, "location":location, "notes":notes, "imgArr":imageArray});
 				localStorage.setItem('StatusArray',JSON.stringify(statusDetails));
-				
+				return;
 			} else{
 				id++;
 				alert("statusfun");
@@ -295,7 +348,7 @@ appnService.factory('NewObservationService', function($http,ApiEndpoint){
 				//getStatusVal.push({"id":id, "sciName":sName, "commonName":cName, "status":status, "date":date, "location":location, "notes":notes, "imgArr":imageArray});
 
 				localStorage.setItem('StatusArray',JSON.stringify(parsed));
-
+				return;
 			}
 			
 			tokenvar1.nId = id;
@@ -304,9 +357,69 @@ appnService.factory('NewObservationService', function($http,ApiEndpoint){
 			
 			localStorage.setItem('USER_KEY',JSON.stringify(tokenvar1));
 			return null;
+		},*/
+		SetDetails: function(details){
+			 statusDetails = details;
 		},
-		GetStatus: function(){
+		GetDetails: function(){
 			return statusDetails;
+		},
+		SetEditObsDetails: function(obsDetails){
+			//alert("editdetails");
+			obsDetailVals = obsDetails;
+		},
+		GetEditObsDetails: function(){
+			return obsDetailVals;
+		},
+		DeleteObservation: function(id){
+			return $http({
+					method : "POST",
+					url : ApiEndpoint.url + '/observation/'+id+'/flagDeleted',
+					headers : {
+						"X-Auth-Token":token,
+						"X-AppKey":appkey
+					},
+					params : paramsData
+				}).success(function(data) {
+					console.log("Obs deleted!")
+				
+					 //console.log(data);
+					//return items;
+			    }).error(function(data, status, headers, config) {
+							console.log("submission error");
+							console.log("data"+data);
+							console.log("headers"+headers);
+							console.log("config"+config);
+							//SetStatus("FAILURE");
+			        		
+			    });
+		},
+		EditSubmitObservation: function(paramsData,id){
+			alert(id);
+			alert(JSON.stringify(paramsData));
+			
+				return $http({
+					method : "PUT",
+					url : ApiEndpoint.url + '/observation/'+id,
+					headers : {
+						"X-Auth-Token":token,
+						"X-AppKey":appkey
+					},
+					params : paramsData
+				}).success(function(data) {
+					console.log("Obs submitted!")
+				
+					 //console.log(data);
+					//return items;
+			    }).error(function(data, status, headers, config) {
+			    	alert("edit error");
+							console.log("submission error");
+							console.log("data"+data);
+							console.log("headers"+headers);
+							console.log("config"+config);
+							//SetStatus("FAILURE");
+			        		
+			    });
 		}
 	  };
 
@@ -322,85 +435,6 @@ appnService.factory('NewObservationService', function($http,ApiEndpoint){
         });
     }
 
-/*appnService.factory('FileService', function() {
-  var images;
-  var IMAGE_STORAGE_KEY = 'images';
- 
-  function getImages() {
-    var img = window.localStorage.getItem(IMAGE_STORAGE_KEY);
-    if (img) {
-      images = JSON.parse(img);
-    } else {
-      images = [];
-    }
-    return images;
-  };
- 
-  function addImage(img) {
-    images.push(img);
-    window.localStorage.setItem(IMAGE_STORAGE_KEY, JSON.stringify(images));
-  };
- 
-  return {
-    storeImage: addImage,
-    images: getImages
-  }
-})
-
-appnService.factory('ImageService', function($cordovaCamera, FileService, $q, $cordovaFile) {
- 
-  function makeid() {
-    var text = '';
-    var possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
- 
-    for (var i = 0; i < 5; i++) {
-      text += possible.charAt(Math.floor(Math.random() * possible.length));
-    }
-    return text;
-  };
- 
-  function optionsForType(type) {
-    var source;
-    switch (type) {
-      case 0:
-        source = Camera.PictureSourceType.CAMERA;
-        break;
-      case 1:
-        source = Camera.PictureSourceType.PHOTOLIBRARY;
-        break;
-    }
-    return {
-      destinationType: Camera.DestinationType.FILE_URI,
-      sourceType: source,
-      allowEdit: false,
-      encodingType: Camera.EncodingType.JPEG,
-      popoverOptions: CameraPopoverOptions,
-      saveToPhotoAlbum: true
-    };
-  }
- 
-  function saveMedia(type) {
-    return $q(function(resolve, reject) {
-      var options = optionsForType(type);
- 
-      $cordovaCamera.getPicture(options).then(function(imageUrl) {
-        var name = imageUrl.substr(imageUrl.lastIndexOf('/') + 1);
-        var namePath = imageUrl.substr(0, imageUrl.lastIndexOf('/') + 1);
-        var newName = makeid() + name;
-        $cordovaFile.copyFile(namePath, name, cordova.file.dataDirectory, newName)
-          .then(function(info) {
-            FileService.storeImage(newName);
-            resolve();
-          }, function(e) {
-            reject();
-          });
-      });
-    })
-  }
-  return {
-    handleMediaDialog: saveMedia
-  }
-});*/
 
 
 
