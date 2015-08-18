@@ -71,10 +71,10 @@ appne.controller('AppCtrl', function($scope, $location,$state,$ionicModal, $ioni
 
   $scope.facebookLogin = function() {
     $cordovaOauth.facebook("836915199738203", ["email"]).then(function(result) {
-            alert(JSON.stringify(result));
+            //alert(JSON.stringify(result));
             //var res = JSON.stringify(result);
             var access_token = result.access_token;
-            alert(access_token);
+            //alert(access_token);
         facebook(access_token);
     });
   }
@@ -93,10 +93,10 @@ appne.controller('AppCtrl', function($scope, $location,$state,$ionicModal, $ioni
   }
 
   function facebook(accessKey){
-    alert("accessKey" + accessKey);
+    //alert("accessKey" + accessKey);
     $(".modal").hide();
     LoginService.FacebookUserlogin(accessKey).then(function(res){
-      alert("in to success");
+     // alert("in to success");
           console.log(res);
           //alert(JSON.stringify(res));
           var gToken = res.data.model.token ;
@@ -111,7 +111,7 @@ appne.controller('AppCtrl', function($scope, $location,$state,$ionicModal, $ioni
     //alert("came");
     $(".modal").hide();
     LoginService.GoogleUserlogin(accesVal).then(function(res){
-      alert("in to success");
+      //alert("in to success");
           console.log(res);
           //alert(JSON.stringify(res));
           var gToken = res.data.model.token ;
@@ -230,6 +230,15 @@ appne.controller('LogoutController', function($scope, $state, $window, $ionicPop
               console.error("erorrrrrr   "+err);
           });
       } 
+
+      $scope.goToNewObs = function(){
+         /*var tokenVal = localStorage.getItem('USER_KEY');
+      var tokenVar = JSON.parse(tokenVal);
+      var countVal = tokenVar.nId;
+      tokenVar.nId = 0;
+      localStorage.setItem('USER_KEY',JSON.stringify(tokenVar));*/
+        $state.go("app.newObservation",null,{reload:true});
+      }
      
 });
 appne.controller('observationStatusController', function($scope, NewObservationService, $cordovaSQLite){
@@ -439,7 +448,7 @@ appne.controller('EditObservationCtrl', function($scope,$state,$http,$cordovaCam
     $scope.userGroupId = [];
 
     var address = LocationService.GetUserSelectedLocAdd();
-    alert(address);
+    //alert(address);
     if(address != ''){
       $scope.newobs['location'] = address;
     }else{
@@ -516,7 +525,7 @@ appne.controller('EditObservationCtrl', function($scope,$state,$http,$cordovaCam
 
   $scope.addMedia = function() {
 
-    if($scope.imgURI.length == 5){
+    if($scope.imgURI.length == 10){
       showDailog("Maximum Images reached");
       return;
     }
@@ -649,6 +658,7 @@ var options = {
     $scope.gps = function(){
       var inter = internetCheck($ionicPopup);
       if(inter == false){
+        
         return;
       }else {
         $state.go("app.location");
@@ -768,7 +778,7 @@ $scope.select = [];
       //console.log($('#Locationval').text());
       $scope.locationAddress = $scope.newobs['location'];
       if($scope.locationAddress == 'Location'){
-        alert($scope.locationAddress);
+        //alert($scope.locationAddress);
         var confirmPopup = $ionicPopup.confirm({
            title: 'Location',
            template: 'you didnt entered Location. Default location will be taken'
@@ -953,7 +963,7 @@ $scope.select = [];
           
 
           function parseResourceDetails(){
-            alert("parseResourceDetails");
+            //alert("parseResourceDetails");
             var count1 = 0;
             console.log("newImgstr" + Object.keys($scope.newImageStr).length);
             //alert(Object.keys($scope.newImageStr).length);
@@ -1020,7 +1030,7 @@ $scope.select = [];
             $scope.submitObsParams['habitat_id'] =  1;//267835; //1;
             
             $scope.newobs.date = $filter('date')( $scope.newobs.date,"dd/MM/yyyy" );
-            alert($scope.newobs.date);
+            //alert($scope.newobs.date);
             $scope.submitObsParams['fromDate']   = $scope.newobs.date;
             $scope.submitObsParams['placeName']  = $scope.locationAddress;
             $scope.submitObsParams['areas']      =  "POINT("+uLatLong.longitude+" "+uLatLong.latitude+")"
@@ -1040,7 +1050,7 @@ $scope.select = [];
             console.log($scope.submitObsParams);
             NewObservationService.EditSubmitObservation($scope.submitObsParams,obsDetails.id).then(function(obsResponse){
               
-              alert("success" + JSON.stringify(obsResponse));;
+              //alert("success" + JSON.stringify(obsResponse));;
               if(obsResponse.data.success == false){
 
                statusCheck();
@@ -1094,10 +1104,45 @@ $scope.select = [];
 
 
 
-appne.controller('NewObservationCtrl', function($scope,$state,$http,$cordovaCamera,LocationService,$ionicPopup,$cordovaDevice, $cordovaFile, $ionicPlatform,  $ionicActionSheet, $filter, $cordovaFileTransfer, ApiEndpoint, UserGroupService, NewObservationService, $cordovaSQLite, $cordovaToast) {
-    
-    //alert("hello");
-    //$scope.showButton = false;
+appne.controller('NewObservationCtrl', function($scope,$window,$route,$state,$location,$http,$cordovaCamera,LocationService,$ionicPopup,$cordovaDevice, $cordovaFile, $ionicPlatform,  $ionicActionSheet, $filter, $cordovaFileTransfer, ApiEndpoint, UserGroupService, NewObservationService, $cordovaSQLite, $cordovaToast) {
+   alert('new');
+   UserGroupService.GetJoinedGroups().then(function(groups){
+
+    console.log(groups['data']['model']);
+    UserGroupService.SetUserJoinGroups(groups);
+  });
+    var tokenVal = localStorage.getItem('USER_KEY');
+      var tokenVar = JSON.parse(tokenVal);
+      var countVal = tokenVar.nId;
+      //alert(countVal);
+      var countVal1 =0
+      /*if(countVal==0){
+        //var currentPageTemplate = $route.current.templateUrl;
+        //$templateCache.remove(currentPageTemplate);
+         //alert('came');
+       // $state.go($state.current, null, { reload: true });
+        //$location.path('/newObservation');
+        //$ionicHistory.clearCache([stateId]);
+        //alert($route.reload());
+        //$route.reload()
+        //$state.$current
+       location.reload();
+        tokenVar.nId = 1;
+        localStorage.setItem('USER_KEY',JSON.stringify(tokenVar));
+      } */
+    setTimeout(function(){
+      if($('ion-nav-bar').hasClass('hide')){
+        //alert('came');
+        $('ion-nav-bar').removeClass('hide');
+        //$('ion-view').css('padding-top','44px');
+        //$('ion-content').css('margin-top','43px');
+      }
+    },100);
+    //alert($('#neobsbuttons').html());
+    //$window.location.reload(true);
+    //$('#neobsbuttons .menu-content .nav-bar-container').removeClass('hide');
+    //$('.neobsbuttons').show();
+    //$scope.showButton1 = true;
     $scope.submitObsVal = true;
     $scope.newobs ={
       sciName    :'',
@@ -1109,19 +1154,29 @@ appne.controller('NewObservationCtrl', function($scope,$state,$http,$cordovaCame
     $scope.submitDbParams = {};
     $scope.imgURI =[];
     $(function () {
-      $('#check').change(function () {
-          $(".check1").toggle(this.checked);
+      $(document).on('change', '#check', function() {
+        alert($scope.newobs.boxVal);
+        $(".check1").toggle(this.checked);
+      /*if($scope.newobs.boxVal == false){
+          $(".check1").hide();
+          $scope.newobs.boxVal == true;
+        }else {
+          $(".check1").show();
+          $scope.newobs.boxVal = true;
+        }*/
       });
   });
 
      $(function () {
-      $('#dateSight').change(function () {
+      $(document).on('change', '#dateSight', function() {
+      //$('#dateSight').change(function () {
           //alert($scope.newobs.date);
         $scope.date = $filter('date')( $scope.newobs.date );
         console.log($scope.date);
         var currentDate = getDatetime();
         //console.log(currentDate);
         if(Date.parse($scope.date) > Date.parse(currentDate)){
+          $scope.newobs.date = "";
            showDailog("Please slect a valid date");
            return;
         }else {
@@ -1520,7 +1575,7 @@ appne.controller('NewObservationCtrl', function($scope,$state,$http,$cordovaCame
 
   $scope.addMedia = function() {
 
-    if($scope.imgURI.length == 5){
+    if($scope.imgURI.length == 10){
       showDailog("Maximum Images reached");
       return;
     }
@@ -1669,10 +1724,12 @@ $scope.removeImage = function(id){
 }
 
 $scope.gps = function(){
+  
   var inter = internetCheck($ionicPopup);
   if(inter == false){
     return;
   }else {
+    $('ion-nav-bar').addClass('hide');
     $state.go("app.gps");
   }
 }
@@ -1760,6 +1817,17 @@ var myOptions = {
 appne.controller('GPSController', function($scope, $state,$http, LocationService) {
 
 //alert($location.path());
+setTimeout(function(){
+      if($('button').hasClass('hide')){
+        //alert('came');
+        $('button').removeClass('hide');
+        //$('ion-view').css('padding-top','44px');
+        //$('ion-content').css('margin-top','43px');
+      }else{
+        //$('ion-view').css('padding-top','0');
+        //$('ion-content').css('margin-top','-1px');
+      }
+    },100);
  var myLatlng = new google.maps.LatLng(11.9384867, 79.8352657);
  
         var mapOptions = {
@@ -1813,8 +1881,7 @@ appne.controller('GPSController', function($scope, $state,$http, LocationService
         $scope.doSomething = function(){
           //console.log($('#Locationval').html());
           updating("Locationval");
-          
-          $state.go("app.newObservation",{},{cache:true});
+          $state.go("app.newObservation",{},{reload:false});
         }
 
          $scope.getLocation = function(){
@@ -1855,7 +1922,7 @@ appne.controller('GPSController', function($scope, $state,$http, LocationService
 
 
 
-appne.controller('HomeController',[ '$scope', '$http', 'BrowseService','LocationService', '$ionicSideMenuDelegate','UserGroupService','$cordovaSQLite', '$ionicPlatform', 'ApiEndpoint', 'NewObservationService' ,'$filter' ,function($scope,$http,BrowseService,LocationService,$ionicSideMenuDelegate, UserGroupService, $cordovaSQLite, $ionicPlatform, ApiEndpoint, NewObservationService,$filter){
+appne.controller('HomeController',[ '$scope', '$state', '$window', '$timeout', '$http', 'BrowseService','LocationService', '$ionicSideMenuDelegate','UserGroupService','$cordovaSQLite', '$ionicPlatform', 'ApiEndpoint', 'NewObservationService' ,'$filter' , '$ionicHistory',function($scope,$state,$window,$timeout,$http,BrowseService,LocationService,$ionicSideMenuDelegate, UserGroupService, $cordovaSQLite, $ionicPlatform, ApiEndpoint, NewObservationService,$filter,$ionicHistory){
   
 //$ionicSideMenuDelegate.canDragContent(true);
 //$cordovaSQLite.deleteDB("observationQueue.db");
@@ -1863,6 +1930,18 @@ appne.controller('HomeController',[ '$scope', '$http', 'BrowseService','Location
 //alert($ionicPlatform.on('online', pendingObservation, false));
   var check ;
   var editCheck = 0; 
+  $ionicHistory.clearCache();
+  $scope.goNewObs = function(){
+      //$state.go("app.newObservation");
+     /* var tokenVal = localStorage.getItem('USER_KEY');
+      var tokenVar = JSON.parse(tokenVal);
+      var countVal = tokenVar.nId;
+      tokenVar.nId = 0;
+      localStorage.setItem('USER_KEY',JSON.stringify(tokenVar));*/
+    $state.go("app.newObservation",null,{reload:true});
+    //$state.go($state.current,$state.params,{reload:true});
+    //$window.location.reload(true);
+  }
   //$scope.showButton = false;
   //alert(Icheck());
   /*offlinesubmission();
@@ -1982,7 +2061,7 @@ UserGroupService.GetJoinedGroups().then(function(groups){
           //var imageLink = $scope.offlineSubmit['imagePath'][i]['path'] ;
           for(var i = 0;i < $scope.nativeImg.length; i++){
           var imageLink = $scope.nativeImg[i] ;
-          alert('file up');
+          //alert('file up');
             options.fileKey = "resources",
             options.fileName = imageLink.substr(imageLink.lastIndexOf('/')+1),
             options.chunkedMode = false,
@@ -2052,7 +2131,7 @@ UserGroupService.GetJoinedGroups().then(function(groups){
               $scope.offlineSubmit["license_"+(i+1)] = "CC_BY";
               
               if(count1 == Object.keys($scope.newImageStr).length){
-                alert("entered");
+                //alert("entered");
                 submitObservation();
               }
             }
@@ -2061,7 +2140,7 @@ UserGroupService.GetJoinedGroups().then(function(groups){
           }
 
           function storeStatusCheck(){
-            alert("store status check");
+            //alert("store status check");
             var sciName;
             var commonName;
             var obsNotes;
@@ -2123,11 +2202,11 @@ UserGroupService.GetJoinedGroups().then(function(groups){
               delete $scope.offlineSubmit['observationId'];
             }
 
-            alert($scope.offlineSubmit['fromDate']);
+            //alert($scope.offlineSubmit['fromDate']);
           if(editCheck==0){
             NewObservationService.SubmitObservation($scope.offlineSubmit).then(function(obsResponse){
               
-              alert("success" + obsResponse.data.success);
+              //alert("success" + obsResponse.data.success);
               if(obsResponse.data.success == true){
                 var query1 = "DELETE FROM OBSERVATION WHERE ID ="+$scope.idVal;
                //alert(query1);
@@ -2158,7 +2237,7 @@ UserGroupService.GetJoinedGroups().then(function(groups){
 
           NewObservationService.EditSubmitObservation($scope.offlineSubmit,obsid).then(function(obsResponse){
               
-              alert("success" + obsResponse.data.success);
+              //alert("success" + obsResponse.data.success);
               if(obsResponse.data.success == true){
                 var query1 = "DELETE FROM OBSERVATION WHERE ID ="+$scope.idVal;
                //alert(query1);
@@ -2173,13 +2252,13 @@ UserGroupService.GetJoinedGroups().then(function(groups){
 
               }
               if(obsResponse.data.success == false){
-                alert("error1");
+                //alert("error1");
                storeStatusCheck();
               }
               console.log(obsResponse);
             },
             function(err){
-              alert("Nosuccess");
+              //alert("Nosuccess");
               console.log(err);
                storeStatusCheck();
             });
@@ -2293,7 +2372,7 @@ BrowseService.GetBrowseList($scope.listParams).then(function(obsList){
   };
 
   $scope.enableMap = function(){
-    alert('map');
+   // alert('map');
     $state.go("app.viewMap");
   }
  
@@ -2341,7 +2420,7 @@ BrowseService.GetBrowseList($scope.listParams).then(function(obsList){
   };
 
   $scope.enableMap = function(){
-    alert('map');
+    //alert('map');
     $state.go("app.viewMap");
   }
   

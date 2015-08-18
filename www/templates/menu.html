@@ -1,8 +1,8 @@
-<ion-side-menus enable-menu-with-back-views="false" >
+<ion-side-menus enable-menu-with-back-views="true" >
   <ion-side-menu-content >
     <ion-nav-bar class="bar-positive">
-      <ion-nav-back-button ng-if="showButton">
-      </ion-nav-back-button>
+      <!--ion-nav-back-button ng-if="showButton">
+      </ion-nav-back-button-->
 
       <ion-nav-buttons side="left">
         <button class="button button-icon  ion-navicon" menu-toggle="left">
@@ -24,7 +24,7 @@
         <i class=" icon ion-ios-home"></i>
           Home
         </ion-item>
-        <ion-item menu-close href="#/app/newObservation" class="item item-icon-left">
+        <ion-item menu-close ng-click="goToNewObs()" class="item item-icon-left">
         <i class=" icon ion-ios-plus"></i>
           New observation
         </ion-item>

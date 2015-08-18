@@ -4,9 +4,9 @@
 // 'starter' is the name of this angular module example (also set in a <body> attribute in index.html)
 // the 2nd parameter is an array of 'requires'
 // 'starter.controllers' is found in controllers.js
-angular.module('starter', ['ionic', 'ngCordova', 'starter.controllers','starter.services']).constant('ApiEndpoint', {
-    //url: 'http://localhost:8100/api'
-    url:'http://portal.wikwio.org/api'
+angular.module('starter', ['ionic', 'ngCordova', 'ngRoute','starter.controllers','starter.services']).constant('ApiEndpoint', {
+    url: 'http://localhost:8100/api'
+   // url:'http://portal.wikwio.org/api'
     //url:'http://pamba.strandls.com/api'
     //url:'http://indiabiodiversity.org/api'
 })
@@ -97,7 +97,7 @@ angular.module('starter', ['ionic', 'ngCordova', 'starter.controllers','starter.
 
 
   .state('app.newObservation', {
-    //cache:false,
+    //cache:true,
     url: "/newObservation",
     views: {
       'menuContent': {
@@ -108,7 +108,7 @@ angular.module('starter', ['ionic', 'ngCordova', 'starter.controllers','starter.
   })
 
   .state('app.gps', {
-    //cache:false,
+    cache:false,
     url: "/gps",
     views: {
       'menuContent': {

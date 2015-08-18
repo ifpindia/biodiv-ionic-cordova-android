@@ -298,7 +298,7 @@ appnService.factory('NewObservationService', function($http,ApiEndpoint){
 	  var tokenvar1 = JSON.parse(tokenvar);
 	  var token = tokenvar1.userKey;
 	  var userId = tokenvar1.userID;
-	  var id = tokenvar1.nId;
+	  //var id = tokenvar1.nId;
 	  var appkey = "a4fbb540-0385-4fff-b5da-590ddb9e2552";//"fc9a88b5-fac9-4f01-bc12-70e148f40a7f";
 	  var statusDetails = [];
 	  var obsDetailVals = [];
