@@ -6,7 +6,7 @@
 // 'starter.controllers' is found in controllers.js
 angular.module('starter', ['ionic', 'ngCordova', 'ngRoute','starter.controllers','starter.services']).constant('ApiEndpoint', {
     url: 'http://localhost:8100/api'
-   // url:'http://portal.wikwio.org/api'
+    //url:'http://portal.wikwio.org/api'
     //url:'http://pamba.strandls.com/api'
     //url:'http://indiabiodiversity.org/api'
 })

@@ -42,17 +42,17 @@
          </div>
          </ion-list>
 
-         <ion-checkbox style="margin:0px 10px 0px 10px;" id="check" ng-model="newobs.boxVal" class="listItem" >Help Identify</ion-checkbox>
+         <ion-checkbox style="margin:0px 10px 0px 10px;" id="check" ng-model="newobs.boxVal" ng-init="checked=true" class="listItem" >Help Identify</ion-checkbox>
 
          <br>
 
 
           <ion-list>
           <div class="list" style="padding:10px;">
-          <ion-item class="listItem check1">
+          <ion-item ng-if="!newobs.boxVal" class="listItem check1">
           <input type="text" style="width:100%" ng-model="newobs.sciName" placeholder="Scientific Name">
           </ion-item>
-          <ion-item class="listItem check1">
+          <ion-item ng-if="!newobs.boxVal" class="listItem check1">
           <input type="text" style="width:100%" ng-model="newobs.commonName" placeholder="Common Name">
           </ion-item>
           <ion-item class="listItem">
@@ -82,3 +82,4 @@
 
   </ion-content>
 </ion-view>
+

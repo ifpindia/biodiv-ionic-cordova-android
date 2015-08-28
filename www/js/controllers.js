@@ -232,12 +232,18 @@ appne.controller('LogoutController', function($scope, $state, $window, $ionicPop
       } 
 
       $scope.goToNewObs = function(){
-         /*var tokenVal = localStorage.getItem('USER_KEY');
+         var tokenVal = localStorage.getItem('USER_KEY');
       var tokenVar = JSON.parse(tokenVal);
       var countVal = tokenVar.nId;
-      tokenVar.nId = 0;
-      localStorage.setItem('USER_KEY',JSON.stringify(tokenVar));*/
-        $state.go("app.newObservation",null,{reload:true});
+        if(countVal==0){
+          tokenVar.nId = 1;
+          localStorage.setItem('USER_KEY',JSON.stringify(tokenVar));
+          $state.go("app.newObservation");
+        }else{
+      
+          $state.go("app.newObservation",null,{reload:true});
+        }
+        //return false;
       }
      
 });
@@ -317,16 +323,48 @@ appne.controller('statusDetailsController', function($scope,$location,NewObserva
   
     //console.log(imgDetails);
 });
-appne.controller('BrowseDetailsCtrl', function($scope,$location,BrowseService,NewObservationService,LocationService) {
+appne.controller('BrowseDetailsCtrl', function($scope,$window,$filter,$cordovaInAppBrowser,$location,BrowseService,NewObservationService,LocationService,$ionicPopup,UserGroupService,$cordovaToast) {
   $scope.vedio = false;
   $scope.showButton = true;
-  console.log("BrowseDetailsCtrl");
+    $scope.agreeButton = false;
+    //$scope.acceptedName = true;
+    $scope.showMore = true;
 
+  var tokenvar = localStorage.getItem('USER_KEY');
+  var tokenvar1 = JSON.parse(tokenvar);
+  var userId = tokenvar1.userID;
+
+  $scope.userValue = tokenvar1.userID;
+  alert($scope.userValue);
+  console.log("BrowseDetailsCtrl");
+  $scope.comment = {
+    text:''
+  };
+  $scope.suggest = {
+    sciName:'',
+    commonName:'',
+    comment:'',
+    lang:'Anglais / English'
+  };
+  $scope.languages = [];
+  $scope.languages.push("Anglais / English","Bangla","Créole Guyane","Créole Maurice","Créole Réunion","Creoles and pidgins, French-based","Créole Seychelles","Français / French","Malgache","Ndebele","Pedi","Siswati","Sotho","Swazi","Taki-taki");
 $scope.editButton = function(){
   LocationService.SetUserSelectedLocAdd('');
 }
+//window.open('http://indiabiodiversity.org/biodiv/user/{{item.userId}}', '_system');
 var obsId = $location.path().split("/")[3];
 
+$scope.openUser = function(userId){
+  //$window.open('http://indiabiodiversity.org/user/show/'+userId, '_system');
+
+$cordovaInAppBrowser.open('http://indiabiodiversity.org/user/show/'+userId, '_blank')
+      .then(function(event) {
+        // success
+      })
+      .catch(function(event) {
+        // error
+      });
+}
 //console.log(typeof(newUrl.split("/")[3]));
 //console.log(obsId);
 
@@ -334,11 +372,241 @@ $scope.obsDetails=BrowseService.getObsList()
 
 console.log($scope.obsDetails);
 browsingArray($scope,$scope.obsDetails,obsId, NewObservationService)
+$scope.commentList = [];
 
+
+  BrowseService.GetComments(obsId).then(function(commentsList){
+
+    console.log(commentsList);
+    for(var i=0;i<commentsList['data']['model']['instanceList'].length;i++){
+      $scope.commentList.push({"userIcon":commentsList['data']['model']['instanceList'][i]['author']['icon'],"userId":commentsList['data']['model']['instanceList'][i]['author']['id'],"userName":commentsList['data']['model']['instanceList'][i]['author']['name'],"activityAction":'',"activityName":$("<p>").html(commentsList['data']['model']['instanceList'][i]['text']).text(),"date":$filter('date')( commentsList['data']['model']['instanceList'][i]['lastUpdated'] )});
+    
+    }
+    
+
+  } );
+
+
+   BrowseService.GetServerTime().then(function(time){
+
+      console.log(time);
+      $scope.serverTime = time;
+       BrowseService.GetActivityFeed(obsId,time.data).then(function(feedList){
+
+          console.log(feedList);
+          $scope.timeVal = feedList['data']['newerTimeRef'] ;
+          parsingFeedDetails($scope,feedList['data']['model']['feeds'],$filter,UserGroupService);
+
+          //$scope.commentList.push({"userName":"karthik","activityAction":"Posted observation to group","activityName":"Western Ghats"}, {"userName":"karthik","activityAction":"Posted observation to group","activityName":"Western Ghats"});
+
+        } );
+
+    } );
+
+   $scope.showMoreButton = function(){
+    console.log($scope.timeVal);
+    BrowseService.GetActivityFeed(obsId,$scope.timeVal).then(function(newFeedList){
+      $scope.listFeed=[];
+          console.log(newFeedList);
+          $scope.timeVal = newFeedList['data']['newerTimeRef'] ;
+          //for(var i=0;i<1;i++){
+            
+            $scope.listFeed.push(newFeedList['data']['model']['feeds'][0]);
+            
+          //}
+          console.log($scope.listFeed);
+          parsingFeedDetails($scope,$scope.listFeed,$filter,UserGroupService);
+
+          //$scope.commentList.push({"userName":"karthik","activityAction":"Posted observation to group","activityName":"Western Ghats"}, {"userName":"karthik","activityAction":"Posted observation to group","activityName":"Western Ghats"});
+
+        } );
+   }
+  
+
+
+  BrowseService.GetRecommendationVotes(obsId).then(function(recommendationVotes){
+    //$scope.acceptedName = true;
+    console.log(recommendationVotes);
+    //alert(recommendationVotes.data.model.recoVotes.length);
+    parsingRecoDetails($scope,recommendationVotes['data']['model']['recoVotes'], userId);
+
+
+  }, function (err){
+    //alert("err");
+    //$scope.acceptedName = false;
+  });
+
+  $scope.postComments = function(){
+    if($scope.comment.text == ''){
+      showIonicAlert($ionicPopup,'Please enter a comment');
+    } else{
+      BrowseService.AddComments(obsId, $scope.comment.text, $scope.serverTime).then(function(res){
+        console.log(res);
+        if(res.data.success == true){
+          $scope.commentList.push({"userIcon":"","userId":"","userName":"you","activityAction":"","activityName":$scope.comment.text,"date":"now"});
+          $scope.comment.text ='';
+        }
+      });
+        //$scope.commentList.push({"userName":"karthik","activityAction":"Posted observation to group","activityName":$scope.comment.text});
+
+    }
+    
+  }
+
+  $scope.agreButton = function(recoId){
+    BrowseService.AgreeRecommendationVotes(obsId, recoId).then(function(res){
+      //console.log(res);
+      if(res.data.success==true){
+        showToast($cordovaToast,"successfully added, please visit the page again to see updated details");
+      }
+    });
+    $scope.agreeButton = true;
+  }
+  $scope.removeButton = function(recoId){
+    //alert(recoId);
+    BrowseService.RemoveRecommendationVotes(obsId, recoId).then(function(res){
+      //console.log(res);
+      if(res.data.success==true){
+        for(var i=0;i < $scope.agreeDetails.length;i++){
+
+          if($scope.agreeDetails[i]['recoId'] == recoId){
+            //console.log("here11");
+            $scope.agreeDetails[i]['noOfVotes'] = --$scope.agreeDetails[i]['noOfVotes'];
+             //console.log("here");
+            for(var j = 0;j < $scope.agreeDetails[i]['userDetails'].length ; j++){
+              if($scope.agreeDetails[i]['userDetails'][j]['userId'] == userId){
+                //console.log("here");
+                $scope.agreeDetails[i]['userDetails'].splice(j,1);
+                //console.log($scope.agreeDetails);
+                break;
+              }
+            }
+            break;
+          }
+        }
+      }
+
+    });
+    $scope.agreeButton = false;
+  }
+  $scope.suggestNames = function(){
+    //console.log($scope.suggest);
+    $scope.addReco = {
+      obvId:obsId,
+      recoName:'',
+      commonName:'',
+      languageName:'',
+      recoComment:''
+    };
+    
+    if($scope.suggest.commonName == '' && $scope.suggest.sciName ==''){
+      showIonicAlert($ionicPopup,'Please enter a name');
+      return;
+    }
+
+    if($scope.suggest.sciName.length >0){
+      $scope.addReco.recoName = $scope.suggest.sciName
+    }
+    if($scope.suggest.commonName.length >0){
+      $scope.addReco.commonName = $scope.suggest.commonName;
+      $scope.addReco.languageName = $scope.suggest.lang;
+    }
+    if($scope.suggest.comment.length >0){
+      $scope.addReco.recoComment = $scope.suggest.comment;
+    }
+
+    //console.log($scope.addReco);
+    BrowseService.AddRecommendationVotes(obsId, $scope.addReco).then(function(result){
+
+    console.log(result);
+    //if($scope.agreeButton){
+
+    //}
+
+   
+  });
+
+  }
   
     //console.log(imgDetails);
 })
 
+function showIonicAlert($ionicPopup,message){
+
+      $ionicPopup.alert({
+          title: 'ERROR',
+          content: message//'You must submit atleast one image'
+        });
+    }
+
+function parsingRecoDetails($scope, recommendationDetails, userId){
+
+  $scope.agreeDetails =[];
+  if(recommendationDetails.length>0){
+    $scope.checkReco = true;
+  for(var i=0; i< recommendationDetails.length; i++){
+    var agreedUser =[];
+    for(var j=0; j< recommendationDetails[i]['authors'].length; j++){
+
+       agreedUser.push({"userIcon": recommendationDetails[i]['authors'][j]['icon'], "userId": recommendationDetails[i]['authors'][j]['id']});
+       if(recommendationDetails[i]['authors'][j]['id'] == userId){
+        //alert('came'+ userId);
+          $scope.agreeButton = true;
+          $scope.recoValue = recommendationDetails[i]['recoId'];
+       } else {
+          $scope.agreeButton = false;
+       }
+    }
+      $scope.agreeDetails.push({"noOfVotes":recommendationDetails[i]['noOfVotes'] ,"canonicalForm": recommendationDetails[i]['name'],"commonNames": recommendationDetails[i]['commonNames'],"userDetails":agreedUser, "recoId":recommendationDetails[i]['recoId'] })
+      //alert(typeof($scope.agreeDetails[0]['noOfVotes']));
+    }
+  }else {
+    $scope.checkReco = false;
+  }
+
+
+}
+function parsingFeedDetails($scope,feedDetails,$filter,UserGroupService){
+  //alert(JSON.stringify(feedDetails[3]));
+  if(feedDetails.length==5 ){
+    $scope.showMore = true;
+  } else if(feedDetails.length==1&&feedDetails[0]['activityType']=="Observation created"){
+    $scope.showMore = false;
+  }else if(feedDetails.length==1){
+      $scope.showMore = true;
+  }else{
+    $scope.showMore = false;
+  }
+
+  var userGrp = UserGroupService.GetUserGroupsList();
+  console.log(userGrp);
+  var groupName;
+
+  for(var i=0;i<feedDetails.length;i++){
+    if(feedDetails[i]['activityHolderType'] == 'species.participation.RecommendationVote'){
+      $scope.commentList.push({"userIcon":feedDetails[i]['author']['icon'],"userId":feedDetails[i]['author']['id'],"userName":feedDetails[i]['author']['name'],"activityAction":feedDetails[i]['activityType'],"activityName":$("<p>").html(feedDetails[i]['activityDescription']).text(),"date":$filter('date')( feedDetails[i]['lastUpdated'] )});
+    }
+    if(feedDetails[i]['activityHolderType'] == 'species.groups.UserGroup'){
+      var groupId = feedDetails[i]['activityHolderId'];
+
+      for(var j=0;j<userGrp.length;j++){
+        if(groupId == userGrp[j]['id']){
+          groupName = userGrp[j]['name'];
+           $scope.commentList.push({"userIcon":feedDetails[i]['author']['icon'],"userId":feedDetails[i]['author']['id'],"userName":feedDetails[i]['author']['name'],"activityAction":feedDetails[i]['activityDescription'],"activityName":groupName,"date":$filter('date')( feedDetails[i]['lastUpdated'] )});
+           break;
+        }
+      }
+    }
+    if(i== (feedDetails.length - 1)){
+      $scope.commentList = $scope.commentList.sort(function(a,b){
+        // Turn your strings into dates, and then subtract them
+        // to get a value that is either negative, positive, or zero.
+        return new Date(a.date) - new Date(b.date);
+      });
+      console.log($scope.commentList);
+    }
+  }
+}
 function browsingArray($scope,obsDetails,obsId,NewObservationService){
 
     var tokenvar = localStorage.getItem('USER_KEY');
@@ -425,6 +693,7 @@ function browsingArray($scope,obsDetails,obsId,NewObservationService){
       }
     }
    
+
 }
 
 appne.controller('EditObservationCtrl', function($scope,$state,$http,$cordovaCamera,LocationService,$ionicPopup,$cordovaDevice, $cordovaFile, $ionicPlatform,  $ionicActionSheet, $filter, $cordovaFileTransfer, ApiEndpoint, UserGroupService, NewObservationService, $cordovaSQLite, $cordovaToast) {
@@ -1065,20 +1334,6 @@ $scope.select = [];
 
           }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
     $scope.deleteObs = function(){
       NewObservationService.DeleteObservation(obsDetails.id).then(function(obsResponse){
               
@@ -1088,6 +1343,8 @@ $scope.select = [];
                showToast($cordovaToast,"Observation couldnot be deleted");
               }else{
                 showToast($cordovaToast,"Observation deleted");
+                $state.go("app.home");
+                
               }
               console.log(obsResponse);
             },
@@ -1105,7 +1362,7 @@ $scope.select = [];
 
 
 appne.controller('NewObservationCtrl', function($scope,$window,$route,$state,$location,$http,$cordovaCamera,LocationService,$ionicPopup,$cordovaDevice, $cordovaFile, $ionicPlatform,  $ionicActionSheet, $filter, $cordovaFileTransfer, ApiEndpoint, UserGroupService, NewObservationService, $cordovaSQLite, $cordovaToast) {
-   alert('new');
+   //alert('new');
    UserGroupService.GetJoinedGroups().then(function(groups){
 
     console.log(groups['data']['model']);
@@ -1153,19 +1410,13 @@ appne.controller('NewObservationCtrl', function($scope,$window,$route,$state,$lo
     $scope.submitObsParams = {};
     $scope.submitDbParams = {};
     $scope.imgURI =[];
-    $(function () {
+    /*$(function () {
       $(document).on('change', '#check', function() {
-        alert($scope.newobs.boxVal);
+        //alert($scope.newobs.boxVal);
         $(".check1").toggle(this.checked);
-      /*if($scope.newobs.boxVal == false){
-          $(".check1").hide();
-          $scope.newobs.boxVal == true;
-        }else {
-          $(".check1").show();
-          $scope.newobs.boxVal = true;
-        }*/
+      
       });
-  });
+  });*/
 
      $(function () {
       $(document).on('change', '#dateSight', function() {
@@ -1764,7 +2015,7 @@ var myOptions = {
     var map = new google.maps.Map(document.getElementById("map"), myOptions);
 
     var marker, i;
-    alert(ListObsDetails.length);
+    //alert(ListObsDetails.length);
     for (var i = 0; i < ListObsDetails.length; i++){
       var lng = ListObsDetails[i]['topology'].split("(")[1].split(" ")[0];
       var lat1 = ListObsDetails[i]['topology'].split("(")[1].split(" ")[1];
@@ -1879,7 +2130,7 @@ setTimeout(function(){
 
  
         $scope.doSomething = function(){
-          //console.log($('#Locationval').html());
+          //alert($('#checking').html());
           updating("Locationval");
           $state.go("app.newObservation",{},{reload:false});
         }
@@ -1909,7 +2160,7 @@ setTimeout(function(){
       $http.get(code).success(function(dataval){
             //console.log(dataval.results[0]);
             if(id == 1){
-              alert("came");
+              //alert("came");
               LocationService.SetUserSelectedLocAdd(dataval.results[0]["formatted_address"]);
             }else{
             $("#"+id).text(dataval.results[0]["formatted_address"])
@@ -1930,17 +2181,19 @@ appne.controller('HomeController',[ '$scope', '$state', '$window', '$timeout', '
 //alert($ionicPlatform.on('online', pendingObservation, false));
   var check ;
   var editCheck = 0; 
-  $ionicHistory.clearCache();
+  //$ionicHistory.clearCache();
   $scope.goNewObs = function(){
-      //$state.go("app.newObservation");
-     /* var tokenVal = localStorage.getItem('USER_KEY');
+       var tokenVal = localStorage.getItem('USER_KEY');
       var tokenVar = JSON.parse(tokenVal);
       var countVal = tokenVar.nId;
-      tokenVar.nId = 0;
-      localStorage.setItem('USER_KEY',JSON.stringify(tokenVar));*/
-    $state.go("app.newObservation",null,{reload:true});
-    //$state.go($state.current,$state.params,{reload:true});
-    //$window.location.reload(true);
+        if(countVal==0){
+          tokenVar.nId = 1;
+          localStorage.setItem('USER_KEY',JSON.stringify(tokenVar));
+          $state.go("app.newObservation");
+        }else{
+              $state.go("app.newObservation",null,{reload:true});
+
+        }
   }
   //$scope.showButton = false;
   //alert(Icheck());
@@ -1978,13 +2231,13 @@ appne.controller('HomeController',[ '$scope', '$state', '$window', '$timeout', '
   var query = "SELECT * FROM OBSERVATION WHERE STATUS= ? ORDER BY ROWID ASC LIMIT 1 ";
   //alert(query);
   $cordovaSQLite.execute(db, query, ['PENDING']).then(function(res) {
-      alert(res.rows.length);
+      //alert(res.rows.length);
       if(res.rows.length >0){
         $scope.idVal = res.rows.item(0)['id'];
         $scope.offlineSubmit = JSON.parse(res.rows.item(0)['obslist']);
         
         $scope.offlineSubmit['fromDate'] = $filter('date')( $scope.offlineSubmit.fromDate,"dd/MM/yyyy" );
-        alert($scope.offlineSubmit['fromDate']);
+        //alert($scope.offlineSubmit['fromDate']);
         console.log($scope.offlineSubmit);
         fileUpload();
       }
@@ -2032,7 +2285,7 @@ UserGroupService.GetJoinedGroups().then(function(groups){
 
 
        for(var i = 0;i < $scope.offlineSubmit['imagePath'].length; i++){
-        alert('came');
+       // alert('came');
         editCheck = 1;
           var imageLink = $scope.offlineSubmit['imagePath'][i]['path'] ;
           if(imageLink.match("http://")){
@@ -2174,7 +2427,7 @@ UserGroupService.GetJoinedGroups().then(function(groups){
             //console.log()
             //NewObservationService.SetStatus(sciName, commonName, "FAILURE", $scope.newobs.date, $scope.locationAddress, obsNotes, $scope.imgURI);
              var query = "UPDATE OBSERVATION SET STATUS='FAILED', OBSLIST='"+JSON.stringify($scope.failedObs)+"' WHERE ID ="+$scope.idVal;
-             alert(query);
+            // alert(query);
               $cordovaSQLite.execute(db, query).then(function(res) {
                   //console.log("INSERT ID -> " + res.insertId);
                   callOffline();
@@ -2324,7 +2577,7 @@ $scope.loadMore = function() {
 
 }]);
 
-appne.controller('ListController',[ '$scope', '$state','$http', 'BrowseService', '$ionicPopup', function($scope,$state,$http,BrowseService,$ionicPopup){
+appne.controller('ListController',[ '$scope', '$state','$http', 'BrowseService', '$ionicPopup','UserGroupService', function($scope,$state,$http,BrowseService,$ionicPopup,UserGroupService){
   internetCheck($ionicPopup);
   $scope.showButton = true;
   console.log("hi");
@@ -2370,6 +2623,11 @@ BrowseService.GetBrowseList($scope.listParams).then(function(obsList){
 //});
     });*/
   };
+  UserGroupService.GetUserGroups().then(function(groups){
+
+    console.log(groups['data']['model']);
+    UserGroupService.SetUserGroups(groups['data']['model']['userGroupInstanceList']);
+  });
 
   $scope.enableMap = function(){
    // alert('map');

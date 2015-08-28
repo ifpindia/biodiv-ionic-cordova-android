@@ -17,7 +17,7 @@ gulp.task('default', ['sass']);
 
 gulp.task('add-proxy', function() {
     return replace({
-        regex: "http://portal.wikwio.org/api",
+        regex: "http://pamba.strandls.com/api",
         replacement: "http://localhost:8100/api",
         paths: replaceFiles,
         recursive: false,
@@ -28,7 +28,7 @@ gulp.task('add-proxy', function() {
 gulp.task('remove-proxy', function() {
     return replace({
         regex: "http://localhost:8100/api",
-        replacement: "http://portal.wikwio.org/api",
+        replacement: "http://pamba.strandls.com/api",
         paths: replaceFiles,
         recursive: false,
         silent: false,

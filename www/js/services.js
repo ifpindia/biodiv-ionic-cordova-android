@@ -107,6 +107,7 @@ appnService.factory('BrowseService', function($http,ApiEndpoint){
       var tokenvar1 = JSON.parse(tokenvar);
       var token = tokenvar1.userKey;
       var justCount = 0;
+      var appkey = "fc9a88b5-fac9-4f01-bc12-70e148f40a7f";//"a4fbb540-0385-4fff-b5da-590ddb9e2552";
 	return {
 		GetBrowseInfo: function(){
 				return $http({
@@ -146,6 +147,7 @@ appnService.factory('BrowseService', function($http,ApiEndpoint){
 					 //console.log(items);
 					//return items;
 			    }).error(function(data, status, headers, config) {
+			    	console.log(config);
 							console.log("Auth.signin.error!")
 			        		
 			    });
@@ -159,6 +161,193 @@ appnService.factory('BrowseService', function($http,ApiEndpoint){
 		},
 		getObsList: function(){
 			return observationDetails;
+		},
+		GetComments: function(obsId){
+			//alert(obsId);
+			return $http({
+					method : "GET",
+					url : ApiEndpoint.url + '/comment/getComments?commentHolderId='+obsId+'&rootHolderId='+obsId+'&rootHolderType=species.participation.Observation&commentHolderType=species.participation.Observation&refTime=1403071938526&max=30&timeLine=newer',
+					//headers : {"X-Auth-Token":token},
+					//params : data,
+				}).success(function(data) {
+					console.log("Auth.signin.success!")
+					//console.log(data);
+					 //items = data;
+					 //console.log(items);
+					//return items;
+			    }).error(function(data, status, headers, config) {
+							console.log(data);
+			        		
+			    });
+		},
+		GetRecommendationVotes: function(obsId){
+			return $http({
+					method : "GET",
+					url : ApiEndpoint.url + '/observation/'+obsId+'/getRecommendationVotes',
+					headers : {"X-Auth-Token":token},
+					params : {"max":10},
+				}).success(function(data) {
+					console.log("Auth.signin.success!")
+					console.log(data);
+					 //items = data;
+					 //console.log(items);
+					//return items;
+			    }).error(function(data, status, headers, config) {
+							console.log("Auth.signin.error!")
+							console.log(data)
+			        		
+			    });
+		},
+		AddRecommendationVotes: function(obsId, paramsData){
+			return $http({
+					method : "POST",
+					url : ApiEndpoint.url + '/observation/'+obsId+'/addRecommendationVotes',
+					headers : {
+						"X-Auth-Token":token,
+						"X-AppKey" : appkey
+					},
+					params : paramsData,
+				}).success(function(data) {
+					console.log("Auth.signin.success!")
+					console.log(data);
+					 //items = data;
+					 //console.log(items);
+					//return items;
+			    }).error(function(data, status, headers, config) {
+							console.log("Auth.signin.error!")
+							console.log(data);
+							console.log(config);
+							console.log(headers);
+			        		
+			    });
+		},
+		RemoveRecommendationVotes: function(obsId, recoId){
+			return $http({
+					method : "GET",
+					url : ApiEndpoint.url + '/observation/'+obsId+'/removeRecommendationVote',
+					headers : {
+						"X-Auth-Token":token,
+						"X-AppKey" : appkey
+					},
+					params : {"recoId":recoId},
+				}).success(function(data) {
+					console.log("Auth.signin.success!")
+					console.log(data);
+					 //items = data;
+					 //console.log(items);
+					//return items;
+			    }).error(function(data, status, headers, config) {
+							console.log("Auth.signin.error!")
+			        		
+			    });
+		},
+		AgreeRecommendationVotes: function(obsId, recoId){
+			return $http({
+					method : "GET",
+					url : ApiEndpoint.url + '/observation/addAgreeRecommendationVote?',
+					headers : {
+						"X-Auth-Token":token,
+						"X-AppKey" : appkey
+					},
+					params : {
+						"recoId":recoId,
+						"obvId" :obsId,
+
+					},
+				}).success(function(data) {
+					console.log("Auth.signin.success!")
+					console.log(data);
+					 //items = data;
+					 //console.log(items);
+					//return items;
+			    }).error(function(data, status, headers, config) {
+							console.log("Auth.signin.error!")
+			        		
+			    });
+		},
+
+		GetActivityFeed: function(obsId, time){
+			//alert(time);
+			return $http({
+					method : "GET",
+					url : ApiEndpoint.url + '/activityFeed/getFeeds',
+					//headers : {"X-Auth-Token":token},
+					params : {
+						'rootHolderId' : obsId,
+						'rootHolderType':'species.participation.Observation',
+						'activityHolderId':'',
+						'activityHolderType':'',
+						'feedType':'Specific',
+						'feedCategory':'',
+						'feedClass':'',
+						'feedPermission':'editable',
+						'feedOrder':'oldestFirst',
+						'subRootHolderId':'',
+						'subRootHolderType':'',
+						'feedHomeObjectId':obsId,
+						'feedHomeObjectType':'species.participation.Observation',
+						'webaddress':'',
+						'userGroupFromUserProfile':'',
+						'refreshType':'manual',
+						'timeLine':'older',
+						'refTime': time,
+						//'newerTimeRef':'1440567887119',
+						//'olderTimeRef':'1440491857591',
+						'user':''
+
+					},
+				}).success(function(data) {
+					console.log("Auth.signin.success!")
+					//console.log(data);
+					 //items = data;
+					 //console.log(items);
+					//return items;
+			    }).error(function(data, status, headers, config) {
+							console.log(data);
+							console.log(config);
+			        		
+			    });
+		},
+		GetServerTime: function(){
+				return $http({
+					method : "GET",
+					url : ApiEndpoint.url + '/activityFeed/getServerTime',
+					headers : {"X-Auth-Token":token},
+
+				}).success(function(data) {
+					console.log("Auth.signin.success!")
+					
+			    }).error(function(data, status, headers, config) {
+							console.log("Auth.signin.error!")
+			        		
+			    });
+		},
+		AddComments: function(obsId, text, serverTime){
+				return $http({
+					method : "POST",
+					url : ApiEndpoint.url + '/comment/addComment',
+					headers : {
+						"X-Auth-Token":token,
+						"X-AppKey" : appkey
+					},
+					params : {
+						'rootHolderId' : obsId,
+						'rootHolderType':'species.participation.Observation',
+						'commentBody':text,
+						'commentHolderId':obsId,
+						'commentHolderType':'species.participation.Observation',
+						'newerTimeRef' : serverTime
+
+					},
+				}).success(function(data) {
+					console.log("Auth.signin.success!")
+					console.log(data);
+					
+			    }).error(function(data, status, headers, config) {
+							console.log("Auth.signin.error!")
+							console.log(data);
+			        		
+			    });
 		}
 	};
 });
@@ -223,6 +412,7 @@ appnService.factory('UserGroupService', function($http,ApiEndpoint){
       var appkey = "a4fbb540-0385-4fff-b5da-590ddb9e2552";
       //alert(userId);
       var userGroups;
+      var groupList;
 
 	return {
 		GetUserGroups: function(){
@@ -287,6 +477,14 @@ appnService.factory('UserGroupService', function($http,ApiEndpoint){
 		},
 		GetUserJoinGroups: function(){
 			return userGroups;
+		},
+		SetUserGroups : function(userGroup){
+
+			groupList = userGroup;
+			return null;
+		},
+		GetUserGroupsList: function(){
+			return groupList;
 		}
 	};
 
