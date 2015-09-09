@@ -38,16 +38,18 @@
       {{singleObsDetails[0].notes}}
          
          <br><br>
-         <div style="border:1px dotted cadetblue;padding:10px 10px 39px 10px;border-radius: 12px;background-color: #a6dfc8;">
+         <div style="border:1px dotted cadetblue;padding:10px 10px 39px 10px;border-radius: 12px;background-color: #a6dfc8;" class='buttonsShow'>
 
          <ion-list >
+         <div class="listss" >
             <ion-item ng-if = "checkReco" ng-repeat='reco in agreeDetails track by $index' class="listItem" style="background-color: #eee;white-space: normal;font-size: 13px;padding: 10px;">
               <b>{{reco.noOfVotes}} user thinks  it is: </b><i style="font-weight: bold;font-style: italic;font-size: 14px;">{{reco.canonicalForm}} </i><b>{{reco.commonNames}}</b>
-              <button class="button button-small button-positive" ng-if = '!agreeButton' ng-click='agreButton({{reco.recoId}})' style="float:right;margin-right:5px;width: 4em;border-radius: inherit;">Agree</button>
-              <button class="button button-small button-positive" ng-if = 'agreeButton' ng-click='removeButton({{reco.recoId}})' style="float:right;margin-right:5px;border-radius: inherit;">Remove</button>
+              <button class="button button-small button-positive "  ng-click='agreButton({{reco.recoId}})' id="agreeButton{{reco.recoId}}" ng-if="!reco['buttonVal']" style="float:right;margin-right:5px;width: 4em;border-radius: inherit;">Agree</button>
+              <button class="button button-small button-positive"  id='removeButton{{reco.recoId}}' ng-if="reco['buttonVal']" ng-click='removeButton({{reco.recoId}})' style="float:right;margin-right:5px;border-radius: inherit;">Remove </button>
               <br>
                  <img ng-repeat='item in reco["userDetails"]' src="{{item.userIcon}}" style="padding:2px;height:38px;border-radius: 50%;" ng-click="openUser({{item.userId}})"/>
             </ion-item>
+            </div>
             <ion-item ng-if = "!checkReco" class="listItem" style="color: #468847;background-color: #dff0d8;border-color: #d6e9c6;white-space: normal;font-size: 13px;padding: 10px;">
               <b>No suggestions for species name. Please suggest</b>
                 
@@ -58,14 +60,20 @@
            <ion-list>
               <div class="list" >
                 <!--div style="display:flex;float: right; width: 100%;"-->
-                <ion-item class="listItem" style="width: 100%;" >
+                <div class="item item-input item-select listItem">
                    <!--input type="text" style="width:100%;height: inherit;" ng-model="suggest.sciName" placeholder="Suggest Scientific Name"-->
-                    <textarea  style="height: 18px;width: 100%;white-space: normal;" ng-model="suggest.commonName" placeholder="Suggest Common Name"></textarea>
-                    
-                     <select style="border: 1px solid blue;max-width: 30%;float: right;" ng-model='suggest.lang'>
+                   <div style="width: 60%;">
+                    <textarea  style="width: 75%;white-space: normal;" ng-model="suggest.commonName" placeholder="Common Name"></textarea>
+                    </div>
+                     <!--select style="border: 1px solid blue;max-width: 30%;float: right;" ng-model='suggest.lang'>
                     <option ng-repeat='lang in languages' >{{lang}}</option>
+                  </select-->
+                  
+                  <select ng-model='suggest.lang' style="right: -17px;">
+                    <option ng-repeat='lang in languages' >{{lang}}</option>
+                    
                   </select>
-                  </ion-item>
+                  </div>
                  
                   <!--/div-->
                   
@@ -91,8 +99,23 @@
              <ion-item ng-repeat='comment in commentList track by $index' class="listItem" style="background-color: #eee;white-space: normal;font-size: 13px;padding: 10px;">
              <img  src="{{comment.userIcon}}" style="padding:2px;height:38px;float:left;border-radius: 50%;" ng-click="openUser({{comment.userId}})"/>
                 <b> {{comment.userName}} :<span style="color:green;"> {{comment.activityAction}} <i style="color:gray;">{{comment.activityName}}</i></a></span></b>
-                <i ng-if="comment.userId == userValue" style="float: right;font-size: x-large;margin-left: 6px;" class="icon ion-trash-b"></i>
-                <p style="float: right">{{comment.date}}</p>
+               
+                <i ng-if="comment.activityAction==''" style="float: right;font-size: large;margin-left: 6px;" ng-click="replyToComment({{comment.commentId}})" class="icon  ion-reply"></i>
+                <i ng-if="(comment.userId == userValue) && (comment.activityAction=='')" ng-click="editComment({{comment.commentId}}, '{{comment.activityName}}')" style="float: right;font-size: small;margin-left: 6px;" class="icon ion-edit"></i>
+                 <p style="float: right">{{comment.date}}</p>
+                <div ng-if = "(comment.activityAction=='') && (replyDiv) && (comment.commentFlag) ">
+                <textarea  style="width:100%;white-space: normal;padding: 0px;" ng-model="reply.replyText" placeholder="reply on comment"></textarea>
+                <button class="button button-small button-positive" type="button" ng-click="postReply({{comment.commentId}})" style="float:right;margin-right:5px;font-size: 12px;min-width: 47px;height: 10px;min-height: 23px;margin-top: 7px;padding: 0px;">Post</button>
+                <button class="button button-small button-positive" type="button" ng-click="hideDiv()" style="float:right;margin-right:5px;font-size: 12px;min-width: 47px;height: 10px;min-height: 23px;margin-top: 7px;padding: 0px;">Cancel</button>
+                </div>
+               
+                <div ng-if = "(comment.activityAction=='') && (editDiv) && (comment.commentFlag) ">
+                <textarea  style="width:100%;white-space: normal;padding: 0px;" ng-model="edit.editText" placeholder="Edit comment"></textarea>
+                <button class="button button-small button-positive" type="button" ng-click="updateComment({{comment.commentId}}, '{{comment.activityName}}')" style="float:right;margin-right:5px;font-size: 12px;min-width: 47px;height: 10px;min-height: 23px;margin-top: 7px;padding: 0px;">Update</button>
+                <button class="button button-small button-positive" type="button" ng-click="deleteComment({{comment.commentId}})" style="float:right;margin-right:5px;font-size: 12px;min-width: 47px;height: 10px;min-height: 23px;margin-top: 7px;padding: 0px;">Delete</button>
+                
+                </div>
+               
 
              </ion-item>
               <button type="button" ng-if="showMore" ng-click = "showMoreButton()" class="button button-small button-positive"  style="float:right;margin-right:5px;">Show More</button>

@@ -107,7 +107,7 @@ appnService.factory('BrowseService', function($http,ApiEndpoint){
       var tokenvar1 = JSON.parse(tokenvar);
       var token = tokenvar1.userKey;
       var justCount = 0;
-      var appkey = "fc9a88b5-fac9-4f01-bc12-70e148f40a7f";//"a4fbb540-0385-4fff-b5da-590ddb9e2552";
+      var appkey = "2b808e98-ab16-4b39-8096-c72eebd18dc0";//"a4fbb540-0385-4fff-b5da-590ddb9e2552";
 	return {
 		GetBrowseInfo: function(){
 				return $http({
@@ -201,7 +201,7 @@ appnService.factory('BrowseService', function($http,ApiEndpoint){
 		AddRecommendationVotes: function(obsId, paramsData){
 			return $http({
 					method : "POST",
-					url : ApiEndpoint.url + '/observation/'+obsId+'/addRecommendationVotes',
+					url : ApiEndpoint.url + '/observation/'+obsId+'/addRecommendationVote',
 					headers : {
 						"X-Auth-Token":token,
 						"X-AppKey" : appkey
@@ -261,6 +261,7 @@ appnService.factory('BrowseService', function($http,ApiEndpoint){
 					 //console.log(items);
 					//return items;
 			    }).error(function(data, status, headers, config) {
+			    	console.log(data);
 							console.log("Auth.signin.error!")
 			        		
 			    });
@@ -322,7 +323,7 @@ appnService.factory('BrowseService', function($http,ApiEndpoint){
 			        		
 			    });
 		},
-		AddComments: function(obsId, text, serverTime){
+		AddComments: function(paramsList){
 				return $http({
 					method : "POST",
 					url : ApiEndpoint.url + '/comment/addComment',
@@ -330,15 +331,26 @@ appnService.factory('BrowseService', function($http,ApiEndpoint){
 						"X-Auth-Token":token,
 						"X-AppKey" : appkey
 					},
-					params : {
-						'rootHolderId' : obsId,
-						'rootHolderType':'species.participation.Observation',
-						'commentBody':text,
-						'commentHolderId':obsId,
-						'commentHolderType':'species.participation.Observation',
-						'newerTimeRef' : serverTime
-
+					params : paramsList,
+				}).success(function(data) {
+					console.log("Auth.signin.success!")
+					console.log(data);
+					
+			    }).error(function(data, status, headers, config) {
+							console.log("Auth.signin.error!")
+							console.log(data);
+			        		
+			    });
+		},
+		DeleteComment: function(id){
+				return $http({
+					method : "GET",
+					url : ApiEndpoint.url + '/comment/removeComment',
+					headers : {
+						"X-Auth-Token":token,
+						"X-AppKey" : appkey
 					},
+					params : {"commentId":id},
 				}).success(function(data) {
 					console.log("Auth.signin.success!")
 					console.log(data);
@@ -349,6 +361,7 @@ appnService.factory('BrowseService', function($http,ApiEndpoint){
 			        		
 			    });
 		}
+
 	};
 });
 

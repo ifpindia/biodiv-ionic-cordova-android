@@ -326,7 +326,7 @@ appne.controller('statusDetailsController', function($scope,$location,NewObserva
 appne.controller('BrowseDetailsCtrl', function($scope,$window,$filter,$cordovaInAppBrowser,$location,BrowseService,NewObservationService,LocationService,$ionicPopup,UserGroupService,$cordovaToast) {
   $scope.vedio = false;
   $scope.showButton = true;
-    $scope.agreeButton = false;
+    //$scope.agreeButton = false;
     //$scope.acceptedName = true;
     $scope.showMore = true;
 
@@ -335,7 +335,7 @@ appne.controller('BrowseDetailsCtrl', function($scope,$window,$filter,$cordovaIn
   var userId = tokenvar1.userID;
 
   $scope.userValue = tokenvar1.userID;
-  alert($scope.userValue);
+  //alert($scope.userValue);
   console.log("BrowseDetailsCtrl");
   $scope.comment = {
     text:''
@@ -379,7 +379,7 @@ $scope.commentList = [];
 
     console.log(commentsList);
     for(var i=0;i<commentsList['data']['model']['instanceList'].length;i++){
-      $scope.commentList.push({"userIcon":commentsList['data']['model']['instanceList'][i]['author']['icon'],"userId":commentsList['data']['model']['instanceList'][i]['author']['id'],"userName":commentsList['data']['model']['instanceList'][i]['author']['name'],"activityAction":'',"activityName":$("<p>").html(commentsList['data']['model']['instanceList'][i]['text']).text(),"date":$filter('date')( commentsList['data']['model']['instanceList'][i]['lastUpdated'] )});
+      $scope.commentList.push({"userIcon":commentsList['data']['model']['instanceList'][i]['author']['icon'],"userId":commentsList['data']['model']['instanceList'][i]['author']['id'],"userName":commentsList['data']['model']['instanceList'][i]['author']['name'],"activityAction":'',"activityName":$("<p>").html(commentsList['data']['model']['instanceList'][i]['text']).text(),"date":$filter('date')( commentsList['data']['model']['instanceList'][i]['lastUpdated'] ), "fullDate":commentsList['data']['model']['instanceList'][i]['lastUpdated'], "commentId":commentsList['data']['model']['instanceList'][i]['id'], "commentFlag":false });
     
     }
     
@@ -435,16 +435,24 @@ $scope.commentList = [];
     //alert("err");
     //$scope.acceptedName = false;
   });
-
+$scope.paramsList ={};
   $scope.postComments = function(){
     if($scope.comment.text == ''){
       showIonicAlert($ionicPopup,'Please enter a comment');
     } else{
-      BrowseService.AddComments(obsId, $scope.comment.text, $scope.serverTime).then(function(res){
+      $scope.paramsList['rootHolderId'] = obsId ;
+      $scope.paramsList['rootHolderType'] = "species.participation.Observation" ;
+      $scope.paramsList['commentBody'] = $scope.comment.text ;
+      $scope.paramsList['commentHolderId'] = obsId ;
+      $scope.paramsList['commentHolderType'] = "species.participation.Observation" ;
+      $scope.paramsList['newerTimeRef'] = $scope.serverTime ;
+      BrowseService.AddComments( $scope.paramsList).then(function(res){
         console.log(res);
         if(res.data.success == true){
-          $scope.commentList.push({"userIcon":"","userId":"","userName":"you","activityAction":"","activityName":$scope.comment.text,"date":"now"});
+          $scope.commentList.push({"userIcon":"","userId":"","userName":"you","activityAction":"","activityName":$scope.comment.text,"date":"now","fullDate":""});
           $scope.comment.text ='';
+          showToast($cordovaToast,"successfully added, please visit the page again to see updated details");
+
         }
       });
         //$scope.commentList.push({"userName":"karthik","activityAction":"Posted observation to group","activityName":$scope.comment.text});
@@ -455,20 +463,45 @@ $scope.commentList = [];
 
   $scope.agreButton = function(recoId){
     BrowseService.AgreeRecommendationVotes(obsId, recoId).then(function(res){
-      //console.log(res);
+      console.log(res);
+      console.log(recoId);
+      console.log($scope.agreeDetails);
       if(res.data.success==true){
-        showToast($cordovaToast,"successfully added, please visit the page again to see updated details");
+      /*for(var i=0;i < $scope.agreeDetails.length;i++){
+                    alert($scope.agreeDetails[i]['recoId']);
+
+          if($scope.agreeDetails[i]['recoId'] == recoId){
+            alert('here');
+            $scope.agreeDetails[i]['noOfVotes'] = ++$scope.agreeDetails[i]['noOfVotes'];
+            $scope.agreeDetails[i]['buttonVal'] = true;
+            break;
+          }
+        }*/
+         //showToast($cordovaToast,"successfully added, please visit the page again to see updated details");
+         BrowseService.GetRecommendationVotes(obsId).then(function(recommendationVotes){
+          //$scope.acceptedName = true;
+          console.log(recommendationVotes);
+          //alert(recommendationVotes.data.model.recoVotes.length);
+          parsingRecoDetails($scope,recommendationVotes['data']['model']['recoVotes'], userId);
+
+
+        }, function (err){
+          //alert("err");
+          //$scope.acceptedName = false;
+        });
       }
     });
-    $scope.agreeButton = true;
+    //$scope.agreeButton = true;
+    //$("#removeButton"+recoId).show();
+    //$("#agreeButton"+recoId).hide();
+    
   }
   $scope.removeButton = function(recoId){
     //alert(recoId);
     BrowseService.RemoveRecommendationVotes(obsId, recoId).then(function(res){
       //console.log(res);
       if(res.data.success==true){
-        for(var i=0;i < $scope.agreeDetails.length;i++){
-
+        /*for(var i=0;i < $scope.agreeDetails.length;i++){
           if($scope.agreeDetails[i]['recoId'] == recoId){
             //console.log("here11");
             $scope.agreeDetails[i]['noOfVotes'] = --$scope.agreeDetails[i]['noOfVotes'];
@@ -477,6 +510,7 @@ $scope.commentList = [];
               if($scope.agreeDetails[i]['userDetails'][j]['userId'] == userId){
                 //console.log("here");
                 $scope.agreeDetails[i]['userDetails'].splice(j,1);
+                $scope.agreeDetails[i]['buttonVal'] = false;
                 //console.log($scope.agreeDetails);
                 break;
               }
@@ -484,11 +518,139 @@ $scope.commentList = [];
             break;
           }
         }
+        showToast($cordovaToast,"successfully removed, please visit the page again to see updated details");
+*/
+        BrowseService.GetRecommendationVotes(obsId).then(function(recommendationVotes){
+            //$scope.acceptedName = true;
+            console.log(recommendationVotes);
+            //alert(recommendationVotes.data.model.recoVotes.length);
+            parsingRecoDetails($scope,recommendationVotes['data']['model']['recoVotes'], userId);
+
+
+          }, function (err){
+            //alert("err");
+            //$scope.acceptedName = false;
+          });
       }
 
     });
-    $scope.agreeButton = false;
+    //$scope.agreeButton = false;
+     //$("#agreeButton"+recoId).show();
+    //$("#removeButton"+recoId).hide();
   }
+  $scope.editDiv = false;
+  $scope.edit = {
+    editText : ''
+  }
+  $scope.editComment = function(id, comment){
+    
+    $scope.editDiv = true;
+    $scope.edit.editText = comment;
+          for(var i=0;i< $scope.commentList.length ;i++){
+            if($scope.commentList[i]['activityAction']==''&& $scope.commentList[i]['commentId'] ==id){
+              $scope.commentList[i]['commentFlag'] = true;
+              alert($scope.commentList[i]['commentFlag']);
+              break;
+            }
+          }
+   }
+   $scope.updateComment = function(id,comment){
+    alert(id);
+    if($scope.edit.editText == '' ){
+      showIonicAlert($ionicPopup,'Please enter a comment');
+    } else if($scope.edit.editText == comment){
+      showIonicAlert($ionicPopup,'comment not changed');
+    } else {
+        $scope.paramsList['commentBody'] = $scope.edit.editText ;
+        $scope.paramsList['commentId'] = id ;
+        BrowseService.AddComments( $scope.paramsList).then(function(res){
+        console.log(res);
+        if(res.data.success == true){
+          //$scope.commentList.push({"userIcon":"","userId":"","userName":"you","activityAction":"","activityName":$scope.reply.replyText,"date":"now","fullDate":""});
+          $scope.edit.editText ='';
+          $scope.editDiv = false;
+          showToast($cordovaToast,"successfully Updated, please visit the page again to see updated details");
+
+        }
+      });
+    }
+   }
+   $scope.deleteComment = function(id){
+    var confirmPopup = $ionicPopup.confirm({
+           title: 'Delete Comment',
+           template: 'This comment will be deleted. Are you sure ? '
+         });
+         confirmPopup.then(function(result) {
+           if(result) {
+
+            BrowseService.DeleteComment(id).then(function(res){
+            console.log(res);
+            if(res.data.success == true){
+              for(var i=0;i< $scope.commentList.length ;i++){
+                if($scope.commentList[i]['commentId'] ==id){
+                  $scope.commentList.splice(i,1);
+                  break;
+                }
+              }
+              //$scope.commentList.push({"userIcon":"","userId":"","userName":"you","activityAction":"","activityName":$scope.reply.replyText,"date":"now","fullDate":""});
+              $scope.editDiv = false;
+              //showToast($cordovaToast,"successfully deleted, please visit the page again to see updated details");
+
+            }
+          });
+
+           } else {
+              return;
+           }
+         });
+    
+   }
+  $scope.replyDiv = false;
+   $scope.replyToComment = function(id){
+    alert(id);
+    $scope.replyDiv = true;
+          for(var i=0;i< $scope.commentList.length ;i++){
+            if($scope.commentList[i]['activityAction']==''&& $scope.commentList[i]['commentId'] ==id){
+              $scope.commentList[i]['commentFlag'] = true;
+              alert($scope.commentList[i]['commentFlag']);
+              break;
+            }
+          }
+   }
+   $scope.hideDiv = function(){
+    $scope.replyDiv = false;
+   }
+   $scope.reply={
+    replyText:''
+   };
+   $scope.postReply = function(id){
+    
+    alert($scope.reply.replyText)
+    //alert(id);
+    if($scope.reply.replyText == ''){
+      showIonicAlert($ionicPopup,'Please enter a comment');
+    } else{
+      $scope.paramsList['rootHolderId'] = obsId ;
+      $scope.paramsList['rootHolderType'] = "species.participation.Observation" ;
+      $scope.paramsList['commentBody'] = $scope.reply.replyText ;
+      $scope.paramsList['commentHolderId'] = obsId ;
+      $scope.paramsList['commentHolderType'] = "species.participation.Observation" ;
+      $scope.paramsList['parentId'] = id ;
+      $scope.paramsList['newerTimeRef'] = $scope.serverTime ;
+      BrowseService.AddComments( $scope.paramsList).then(function(res){
+        console.log(res);
+        if(res.data.success == true){
+          $scope.commentList.push({"userIcon":"","userId":"","userName":"me","activityAction":"","activityName":$scope.reply.replyText,"date":"now","fullDate":""});
+          $scope.reply.replyText ='';
+          $scope.replyDiv = false;
+          showToast($cordovaToast,"successfully added, please visit the page again to see updated details");
+
+        }
+      });
+        //$scope.commentList.push({"userName":"karthik","activityAction":"Posted observation to group","activityName":$scope.comment.text});
+
+    }
+   }
   $scope.suggestNames = function(){
     //console.log($scope.suggest);
     $scope.addReco = {
@@ -519,6 +681,27 @@ $scope.commentList = [];
     BrowseService.AddRecommendationVotes(obsId, $scope.addReco).then(function(result){
 
     console.log(result);
+    for(var i=0;i < $scope.agreeDetails.length;i++){
+      $scope.agreeDetails[i]['buttonVal'] = false;
+    }
+    //$scope.agreeDetails.push({"noOfVotes":"you" ,"canonicalForm": $scope.addReco.recoName,"commonNames": "("+$scope.addReco.commonName+")","userDetails":"", "recoId":"", "buttonVal":"tfal" })
+
+    $scope.suggest.sciName='',
+    $scope.suggest.commonName ='',
+    $scope.suggest.recoComment='',
+    BrowseService.GetRecommendationVotes(obsId).then(function(recommendationVotes){
+    //$scope.acceptedName = true;
+    console.log(recommendationVotes);
+    //alert(recommendationVotes.data.model.recoVotes.length);
+    parsingRecoDetails($scope,recommendationVotes['data']['model']['recoVotes'], userId);
+
+
+  }, function (err){
+    //alert("err");
+    //$scope.acceptedName = false;
+  });
+
+    //showToast($cordovaToast,"successfully added, please visit the page again to see updated details");
     //if($scope.agreeButton){
 
     //}
@@ -544,20 +727,29 @@ function parsingRecoDetails($scope, recommendationDetails, userId){
   $scope.agreeDetails =[];
   if(recommendationDetails.length>0){
     $scope.checkReco = true;
+    var buttonVal = false;
   for(var i=0; i< recommendationDetails.length; i++){
     var agreedUser =[];
     for(var j=0; j< recommendationDetails[i]['authors'].length; j++){
 
        agreedUser.push({"userIcon": recommendationDetails[i]['authors'][j]['icon'], "userId": recommendationDetails[i]['authors'][j]['id']});
        if(recommendationDetails[i]['authors'][j]['id'] == userId){
-        //alert('came'+ userId);
-          $scope.agreeButton = true;
+        alert('came'+ userId);
+          //$scope.agreeButton = true;
+          //$(".listss #removeButton"+recommendationDetails[i]['recoId']).show();
+          //$(".listss #agreeButton"+recommendationDetails[i]['recoId']).hide();
+          //console.log($("#agreeButton"+recommendationDetails[i]['recoId']).html());
+          //alert($(".listss").html());
+          buttonVal = true;
           $scope.recoValue = recommendationDetails[i]['recoId'];
        } else {
-          $scope.agreeButton = false;
+          //$scope.agreeButton = false;
+          buttonVal = false;
+          //$("#agreeButton"+recommendationDetails[i]['recoId']).show();
+          //$("#removeButton"+recommendationDetails[i]['recoId']).hide();
        }
     }
-      $scope.agreeDetails.push({"noOfVotes":recommendationDetails[i]['noOfVotes'] ,"canonicalForm": recommendationDetails[i]['name'],"commonNames": recommendationDetails[i]['commonNames'],"userDetails":agreedUser, "recoId":recommendationDetails[i]['recoId'] })
+      $scope.agreeDetails.push({"noOfVotes":recommendationDetails[i]['noOfVotes'] ,"canonicalForm": recommendationDetails[i]['name'],"commonNames": recommendationDetails[i]['commonNames'],"userDetails":agreedUser, "recoId":recommendationDetails[i]['recoId'], "buttonVal":buttonVal })
       //alert(typeof($scope.agreeDetails[0]['noOfVotes']));
     }
   }else {
@@ -570,6 +762,8 @@ function parsingFeedDetails($scope,feedDetails,$filter,UserGroupService){
   //alert(JSON.stringify(feedDetails[3]));
   if(feedDetails.length==5 ){
     $scope.showMore = true;
+  //} else if(feedDetails.length < 5){
+   // $scope.showMore = false;
   } else if(feedDetails.length==1&&feedDetails[0]['activityType']=="Observation created"){
     $scope.showMore = false;
   }else if(feedDetails.length==1){
@@ -584,7 +778,7 @@ function parsingFeedDetails($scope,feedDetails,$filter,UserGroupService){
 
   for(var i=0;i<feedDetails.length;i++){
     if(feedDetails[i]['activityHolderType'] == 'species.participation.RecommendationVote'){
-      $scope.commentList.push({"userIcon":feedDetails[i]['author']['icon'],"userId":feedDetails[i]['author']['id'],"userName":feedDetails[i]['author']['name'],"activityAction":feedDetails[i]['activityType'],"activityName":$("<p>").html(feedDetails[i]['activityDescription']).text(),"date":$filter('date')( feedDetails[i]['lastUpdated'] )});
+      $scope.commentList.push({"userIcon":feedDetails[i]['author']['icon'],"userId":feedDetails[i]['author']['id'],"userName":feedDetails[i]['author']['name'],"activityAction":feedDetails[i]['activityType'],"activityName":$("<p>").html(feedDetails[i]['activityDescription']).text(),"date":$filter('date')( feedDetails[i]['lastUpdated'] ), "fullDate":feedDetails[i]['lastUpdated']});
     }
     if(feedDetails[i]['activityHolderType'] == 'species.groups.UserGroup'){
       var groupId = feedDetails[i]['activityHolderId'];
@@ -592,16 +786,20 @@ function parsingFeedDetails($scope,feedDetails,$filter,UserGroupService){
       for(var j=0;j<userGrp.length;j++){
         if(groupId == userGrp[j]['id']){
           groupName = userGrp[j]['name'];
-           $scope.commentList.push({"userIcon":feedDetails[i]['author']['icon'],"userId":feedDetails[i]['author']['id'],"userName":feedDetails[i]['author']['name'],"activityAction":feedDetails[i]['activityDescription'],"activityName":groupName,"date":$filter('date')( feedDetails[i]['lastUpdated'] )});
+           $scope.commentList.push({"userIcon":feedDetails[i]['author']['icon'],"userId":feedDetails[i]['author']['id'],"userName":feedDetails[i]['author']['name'],"activityAction":feedDetails[i]['activityDescription'],"activityName":groupName,"date":$filter('date')( feedDetails[i]['lastUpdated'] ), "fullDate":feedDetails[i]['lastUpdated']});
            break;
         }
       }
+    }
+    if(feedDetails[i]['activityHolderType'] == 'species.participation.Observation'){
+      $scope.commentList.push({"userIcon":feedDetails[i]['author']['icon'],"userId":feedDetails[i]['author']['id'],"userName":feedDetails[i]['author']['name'],"activityAction":feedDetails[i]['activityType'],"activityName":$("<p>").html(feedDetails[i]['activityDescription']).text(),"date":$filter('date')( feedDetails[i]['lastUpdated'] ), "fullDate":feedDetails[i]['lastUpdated']});
     }
     if(i== (feedDetails.length - 1)){
       $scope.commentList = $scope.commentList.sort(function(a,b){
         // Turn your strings into dates, and then subtract them
         // to get a value that is either negative, positive, or zero.
-        return new Date(a.date) - new Date(b.date);
+        //return new Date(a.date) - new Date(b.date) && new Date(a['fullDate']).getTime() - new Date(b['fullDate']).getTime();
+        return new Date(a['fullDate']).getTime() - new Date(b['fullDate']).getTime();
       });
       console.log($scope.commentList);
     }
