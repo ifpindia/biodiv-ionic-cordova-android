@@ -549,13 +549,13 @@ $scope.paramsList ={};
           for(var i=0;i< $scope.commentList.length ;i++){
             if($scope.commentList[i]['activityAction']==''&& $scope.commentList[i]['commentId'] ==id){
               $scope.commentList[i]['commentFlag'] = true;
-              alert($scope.commentList[i]['commentFlag']);
+              //alert($scope.commentList[i]['commentFlag']);
               break;
             }
           }
    }
    $scope.updateComment = function(id,comment){
-    alert(id);
+    //alert(id);
     if($scope.edit.editText == '' ){
       showIonicAlert($ionicPopup,'Please enter a comment');
     } else if($scope.edit.editText == comment){
@@ -607,12 +607,12 @@ $scope.paramsList ={};
    }
   $scope.replyDiv = false;
    $scope.replyToComment = function(id){
-    alert(id);
+    //alert(id);
     $scope.replyDiv = true;
           for(var i=0;i< $scope.commentList.length ;i++){
             if($scope.commentList[i]['activityAction']==''&& $scope.commentList[i]['commentId'] ==id){
               $scope.commentList[i]['commentFlag'] = true;
-              alert($scope.commentList[i]['commentFlag']);
+              //alert($scope.commentList[i]['commentFlag']);
               break;
             }
           }
@@ -625,7 +625,7 @@ $scope.paramsList ={};
    };
    $scope.postReply = function(id){
     
-    alert($scope.reply.replyText)
+    //alert($scope.reply.replyText)
     //alert(id);
     if($scope.reply.replyText == ''){
       showIonicAlert($ionicPopup,'Please enter a comment');
@@ -734,7 +734,7 @@ function parsingRecoDetails($scope, recommendationDetails, userId){
 
        agreedUser.push({"userIcon": recommendationDetails[i]['authors'][j]['icon'], "userId": recommendationDetails[i]['authors'][j]['id']});
        if(recommendationDetails[i]['authors'][j]['id'] == userId){
-        alert('came'+ userId);
+        //alert('came'+ userId);
           //$scope.agreeButton = true;
           //$(".listss #removeButton"+recommendationDetails[i]['recoId']).show();
           //$(".listss #agreeButton"+recommendationDetails[i]['recoId']).hide();
