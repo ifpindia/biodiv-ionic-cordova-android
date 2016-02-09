@@ -3,7 +3,8 @@
   <h1 class="title">Login</h1>
 </div>
   <ion-content >
-  <div class="modal"></div>
+    <div class="modal1"></div>
+
   <br><br><br>
     <form ng-submit="doLogin()">
       <div class="list">
@@ -15,7 +16,7 @@
           <!--span class="input-label">Password :</span-->
           <input id="pass" type="password" ng-model="loginData.password" placeholder="Password">
         </label>
-        <label class="item">
+        <label>
           <button class="button button-block button-positive" type="submit">Log in</button>
         </label>
       </div>
@@ -26,13 +27,17 @@
       </div>
 
     </form>
-    <!--br>
+    <br>
     <h4 align="center">Or</h4>
     <br>
     <div align="center">
-      <img src="img/google.png" ng-click="googleLogin()" height="60px" width="60px">
-      <img src="img/facebook.png" ng-click="facebookLogin()" height="60px" width="60px" >
-      </div-->
+      <img src="img/google1.png" ng-click="googleLogin()" height="60px" width="60px">
+      <!--img src="img/facebook.png" ng-click="facebookLogin()" height="55px" width="60px" style="border-radius:28px;"-->
+      </div>
+          <div align="center">
+
+      <a href="#/app/aboutUs/2"  style="text-decoration:none; color:#468847;">About</a>
+      </div>
   </ion-content>
 </ion-view>
 

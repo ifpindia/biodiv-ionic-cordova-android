@@ -1,11 +1,10 @@
 {
-  "name": "biodiv-ionic",
-  "app_id": "",
+  "name": "WikwioCS",
+  "app_id": "2aada8cd",
   "proxies": [
     {
       "path": "/api",
-      "proxyUrl": "http://pamba.strandls.com/api/"
+      "proxyUrl": "http://portal.wikwio.org/api"
     }
   ]
 }
-

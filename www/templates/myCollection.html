@@ -1,6 +1,8 @@
 
-<ion-view view-title="My Collection">
+<ion-view view-title="My Observations">
   <ion-content >
+      <div class="modal1"></div>
+
   <div id="myCollectionList" style="display:none;">
          <ion-list class="item-icon-right">
          <ion-item class="item-thumbnail-left" ng-repeat='item in details track by $index' href="#/app/browsedetails/{{item.id}}">
@@ -18,9 +20,9 @@
 		    >
 		  </ion-infinite-scroll>
         </div> 
-        <div id="myCollectionMsg" style="display:none;">
-        <p style="text-align: center;margin-top:50%">You dont have any observation submitted</p>
-        <a class="button button-block button-positive " style="border-radius: 7px;" href="#/app/newObservation" >
+        <div id="myCollectionMsg" style="display:none;" class="wrapper text-center">
+        <p style="text-align: center;">You dont have any observation submitted</p>
+        <a class="button button-block button-positive " style="border-radius: 7px;" ng-click="goNewObs()" >
           New Observation
         </a>
         </div>

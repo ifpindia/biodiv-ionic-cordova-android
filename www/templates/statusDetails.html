@@ -11,7 +11,7 @@
 
        
        <ion-scroll direction="x" class="wide-as-needed padding" >
-         <img ng-repeat='item in singleImgDetails[0]["image"]' src="{{item.path}}" style="padding:2px;height:25%;width:25%;" /> 
+         <img ng-repeat='item in singleImgDetails[0]["image"]' src="{{item.path}}" style="padding:2px;height:35%;width:45%;" /> 
     
       </ion-scroll>
 
@@ -26,6 +26,15 @@
       <p>{{singleObsDetails[0].updated}}</p>
       <h4 ng-if="!visible">Notes:</h4>
       {{singleObsDetails[0].notes}}
+
+      <br>
+        <div style="text-align: center;">
+
+          <button ng-if="ShowSubmitButton" class="button button-positive" ng-click="submitFailedObs()" style="border-radius: 7px;width:40%;">Re-Submit</button>
+        <button ng-if="ShowSubmitButton" class="button  button-positive" ng-click="deleteObs()" style="border-radius: 7px;width:40%;margin-left: 8px;">Delete</button>
+        </div>
+         <button ng-if="!ShowSubmitButton" class="button button-full button-positive" ng-click="deleteObs()" style="border-radius: 7px;">Delete</button>
+       <br>
          
   </ion-content> 
 </ion-view>

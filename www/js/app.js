@@ -4,16 +4,17 @@
 // 'starter' is the name of this angular module example (also set in a <body> attribute in index.html)
 // the 2nd parameter is an array of 'requires'
 // 'starter.controllers' is found in controllers.js
-angular.module('starter', ['ionic', 'ngCordova', 'ngRoute','starter.controllers','starter.services']).constant('ApiEndpoint', {
-    url: 'http://localhost:8100/api'
-    //url:'http://portal.wikwio.org/api'
-    //url:'http://pamba.strandls.com/api'
+angular.module('starter', ['ionic','ionic.service.core', 'ngCordova', 'ngRoute', 'ion-autocomplete', 'starter.controllers','starter.services','google.places']).constant('ApiEndpoint', {
+    //url: 'http://localhost:8100/api'
+    url:'http://portal.wikwio.org/api'
+    //url:'http://192.9.200.253:8080/biodiv/api'
     //url:'http://indiabiodiversity.org/api'
 })
 
 
-.run(function($ionicPlatform, $cordovaSQLite) {
+.run(function($ionicPlatform, $cordovaSQLite, $ionicSideMenuDelegate,$ionicPopup,$state,$http,ApiEndpoint,NotificationService,$filter,$rootScope,$ionicModal) {
   $ionicPlatform.ready(function() {
+    //var appVersion = "2.0.10";
     // Hide the accessory bar by default (remove this to show the accessory bar above the keyboard
     // for form inputs)
     if (window.cordova && window.cordova.plugins.Keyboard) {
@@ -23,14 +24,133 @@ angular.module('starter', ['ionic', 'ngCordova', 'ngRoute','starter.controllers'
       // org.apache.cordova.statusbar required
       StatusBar.styleDefault();
     }
-     db = $cordovaSQLite.openDB("observationQueue.db");
+    if (window.cordova) {
+    db = $cordovaSQLite.openDB("observationQueue.db");
      $cordovaSQLite.execute(db, "CREATE TABLE IF NOT EXISTS observation (id integer primary key, status text, obslist text)");
+     var io = Ionic.io();
+     var scope;
+    var push = new Ionic.Push({
+      "onNotification": function(notification) {
+        scope = $rootScope.$new();
+        scope.items = [{"title":notification.title,"desc":notification.text, "time":$filter('date')(Date.now(),"MMM/dd/yyyy")}];
+        scope.itemVal = 0;
+        scope.checkValue = true;
+        $ionicModal.fromTemplateUrl("templates/showNotification.html", {
+          cache:false,
+       scope: scope,
+       animation: 'slide-in-up'
+       }).then(function(modal) {
+       scope.modal = modal;
+       scope.modal.show();
+       });
+      },
+      "pluginConfig": {
+        "android": {
+          //"iconColor": "#0000FF"
+          "icon": "icon"
+        }
+      }
+    });
+    var user = Ionic.User.current();
+    
+    if (!user.id) {
+      user.id = Ionic.User.anonymousId();
+    }
+
+    $rootScope.closeModal = function() {
+      if(localStorage.getItem('USER_KEY')!== null){
+      //alert(Icheck());
+        $state.go("app.notification");
+      }else{
+
+      }
+       scope.modal.hide();
+       scope.modal.remove();
+
+      };
+    
+    // Just add some dummy data..
+    user.set('name', 'biodiv');
+    user.set('bio', 'This is my little bio');
+    user.save();
+   
+    var callback = function(data) {
+      console.log(data.token);
+      if(window.Connection) {
+        if(navigator.connection.type != Connection.NONE) {
+     if(localStorage.getItem('NOTIFICATION')== null){
+      
+        NotificationService.SaveTokens(data.token).then(function(resp){
+          var setVar = {"tokenVar":data.token};
+          localStorage.setItem('NOTIFICATION',JSON.stringify(setVar));
+        });
+
+         }
+       }
+     }
+      
+      push.addTokenToUser(user);
+      user.save();
+    };
+    push.register(callback);
+    var appVersion;
+    if(navigator.connection.type != Connection.NONE) {
+
+    NotificationService.GetAppVersion().then(function(localVersion){
+      appVersion = localVersion.data.instance.andriod;
+      cordova.getAppVersion(function(version) {
+        if(appVersion != version){
+           var confirmPopup = $ionicPopup.confirm({
+          title: 'New Version',
+          template: 'WikwioCS has a new version,Please update the app to get new features.',
+          okText: 'Update now',
+          cancelText: 'Later'
+        });
+         confirmPopup.then(function(result) {
+
+            if(result) {
+              window.open('https://play.google.com/store/apps/details?id=com.ifp.wikwio', '_system');
+              if(localStorage.getItem('USER_KEY')!== null){
+                //alert(Icheck());
+                $state.go("app.home");
+              }
+            }else{
+              if(localStorage.getItem('USER_KEY')!== null){
+                //alert(Icheck());
+                $state.go("app.home");
+              }
+            }
+          });
+
+        }else {
+          if(localStorage.getItem('USER_KEY')!== null){
+            //alert(Icheck());
+            $state.go("app.home");
+          }
+        }
+      });
+
+    });
+  }else {
+     if(localStorage.getItem('USER_KEY')!== null){
+          //alert(Icheck());
+         $state.go("app.home");
+      }
+  }
+      
+    }
+     
   });
+  $ionicPlatform.registerBackButtonAction(function () {
+       //alert("Hello");
+       $ionicSideMenuDelegate.toggleLeft();
+       //return ;
+     }, 100);
 })
 
 
 
-.config(function($stateProvider, $urlRouterProvider) {
+.config(function($stateProvider, $urlRouterProvider, $ionicConfigProvider) {
   $stateProvider
 
 
@@ -66,7 +186,7 @@ angular.module('starter', ['ionic', 'ngCordova', 'ngRoute','starter.controllers'
   })
 
   .state('app.home', {
-    cache:false,
+    //cache:false,
     url: "/home",
     views: {
       'menuContent': {
@@ -76,6 +196,16 @@ angular.module('starter', ['ionic', 'ngCordova', 'ngRoute','starter.controllers'
     }
   })
 
+    .state('app.aboutUs', {
+    cache:false,
+    url: "/aboutUs/:id",
+    views: {
+      'menuContent': {
+        templateUrl: "templates/aboutUs.html",
+        controller: 'aboutController'
+      }
+    }
+  })
   .state('app.viewMap', {
     cache:false,
     url: "/viewMap",
@@ -153,6 +283,17 @@ angular.module('starter', ['ionic', 'ngCordova', 'ngRoute','starter.controllers'
       }
     })
 
+    .state('app.getLocation', {
+      cache:false,
+      url: "/getLocation/:statusId",
+      views: {
+        'menuContent': {
+          templateUrl: "templates/getLocation.html",
+          controller: 'GPSController'
+        }
+      }
+    })
+
     .state('app.browse', {
       //cache:false,
       url: "/browse",
@@ -176,7 +317,7 @@ angular.module('starter', ['ionic', 'ngCordova', 'ngRoute','starter.controllers'
     })
 
     .state('app.mycollection', {
-      cache:false,
+      //cache:false,
       url: "/mycollection",
       views: {
         'menuContent': {
@@ -197,8 +338,29 @@ angular.module('starter', ['ionic', 'ngCordova', 'ngRoute','starter.controllers'
       }
     })
 
+    .state('app.settings', {
+    cache:false,
+    url: "/settings",
+    views: {
+      'menuContent': {
+        templateUrl: "templates/settings.html",
+        controller: 'SettingsController'
+      }
+    }
+  })
+    .state('app.notification', {
+    cache:false,
+    url: "/notification",
+    views: {
+      'menuContent':{
+        templateUrl: "templates/notificationList.html",
+        controller:  'NotificationController'
+     }
+    }
+  })
+
     .state('app.editDetails', {
-      cache:false,
+      //cache:false,
       url: "/editDetails/:browseId",
       views: {
         'menuContent': {
@@ -216,12 +378,14 @@ angular.module('starter', ['ionic', 'ngCordova', 'ngRoute','starter.controllers'
       'menuContent': {
         templateUrl: "templates/observationStatus.html",
 
-        controller: 'observationStatusController'
+        //controller: 'observationStatusController'
       }
     }
   });
   // if none of the above states are matched, use this as the fallback
   $urlRouterProvider.otherwise('/login');
+  $ionicConfigProvider.navBar.alignTitle("center");
+
 });
 
 
